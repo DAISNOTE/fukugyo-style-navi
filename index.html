@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>副業スタイルナビ｜F!ND</title>
 <meta name="description" content="質問に答えるだけで、まず3ヶ月試す副業を1つ選べる無料ツール。有料note「副業スタイル」購入者特典。">
+<meta name="robots" content="noindex, nofollow">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ccircle cx='32' cy='32' r='32' fill='%232563EB'/%3E%3Ccircle cx='27' cy='27' r='11' fill='none' stroke='white' stroke-width='5'/%3E%3Cline x1='35' y1='35' x2='46' y2='46' stroke='white' stroke-width='6' stroke-linecap='round'/%3E%3C/svg%3E">
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -162,13 +163,29 @@ textarea:focus,input:focus,select:focus{outline:2px solid var(--accent);outline-
 .confirm{margin-top:12px;padding:13px 15px;border:1.5px solid var(--bad);border-radius:var(--r);background:var(--bad-soft);font-size:15px}
 .confirm .actions{margin-top:10px}
 footer.fine{color:var(--sub);font-size:13px;margin-top:44px;border-top:1px solid var(--line);padding-top:16px}
+.gate{position:fixed;inset:0;background:var(--bg);z-index:100;display:flex;align-items:center;justify-content:center;padding:20px}
+.gatebox{max-width:340px;width:100%;text-align:center}
+.gatebox .mascot{width:72px;margin:0 auto 14px}
+.gatebox h2{margin:0 0 8px}
+.gatebox input{margin:16px 0 10px;text-align:center}
+.gatebox .btn{width:100%}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
 </head>
 <body>
 
 
-<div class="wrap">
+<div id="gate" class="gate">
+  <div class="gatebox">
+    <span class="mascot" aria-hidden="true"><img src="mascot.png" alt=""></span>
+    <h2>あいことばを<br>入力してください</h2>
+    <p class="note">有料note「副業スタイル」の本文に書いてあります。</p>
+    <input type="text" id="gateInput" autocomplete="off" placeholder="あいことば">
+    <button type="button" id="gateBtn" class="btn primary">進む</button>
+    <p id="gateMsg" class="warnline" hidden>あいことばが違うようです。もう一度確認してください</p>
+  </div>
+</div>
+<div class="wrap" hidden>
   <header class="top">
     <div class="brandrow">
       <span class="mascot" aria-hidden="true"><img src="mascot.png" alt=""></span>
@@ -800,7 +817,24 @@ document.addEventListener("change",e=>{
   if(q){ if(q.multi){const arr=new Set(S.a[n]||[]); el.checked?arr.add(el.value):arr.delete(el.value); if(el.value==="k_none"&&el.checked){arr.clear();arr.add("k_none")} else if(el.checked) arr.delete("k_none"); S.a[n]=[...arr]} else S.a[n]=el.value; S.q3={}; S.pick=""; render(); }
 });
 document.addEventListener("input",e=>{const el=e.target; if(el.dataset.bind && el.dataset.bind!=="start"){S[el.dataset.bind]=el.value; save(); if(S.step===6){const sh=document.querySelector(".sheet"); if(sh) sh.outerHTML=sheet()}}});
-render();
+
+/* ---------- あいことばゲート ---------- */
+const GATE_KEY="find-style-navi-gate-v1";
+const PASSPHRASE="間違っていない";
+function gateUnlocked(){try{return localStorage.getItem(GATE_KEY)==="1"}catch(e){return false}}
+function unlockGate(){try{localStorage.setItem(GATE_KEY,"1")}catch(e){}}
+function showApp(){$("#gate").hidden=true; $(".wrap").hidden=false; render();}
+function tryUnlock(){
+  const v=($("#gateInput").value||"").trim();
+  if(v && v===PASSPHRASE){unlockGate(); showApp()}
+  else{$("#gateMsg").hidden=false}
+}
+if(gateUnlocked()){
+  showApp();
+}else{
+  $("#gateBtn").addEventListener("click",tryUnlock);
+  $("#gateInput").addEventListener("keydown",e=>{if(e.key==="Enter") tryUnlock()});
+}
 })();
 </script>
 
