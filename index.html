@@ -1,0 +1,771 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>副業スタイルナビ｜F!ND</title>
+<meta name="description" content="質問に答えるだけで、まず3ヶ月試す副業を1つ選べる無料ツール。有料note「副業スタイル」購入者特典。">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ccircle cx='32' cy='32' r='32' fill='%232563EB'/%3E%3Ccircle cx='27' cy='27' r='11' fill='none' stroke='white' stroke-width='5'/%3E%3Cline x1='35' y1='35' x2='46' y2='46' stroke='white' stroke-width='6' stroke-linecap='round'/%3E%3C/svg%3E">
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@400;500;700&family=Zen+Kaku+Gothic+Antique:wght@700;900&display=swap">
+<style>
+/* Layout: one narrow working column; a sticky step rail on top; each step is a single screen-worth of choices. */
+:root{
+  --bg:#FFFFFF; --surface:#FFFFFF; --ink:#15171C; --sub:#6E7280; --line:#E6E8F0;
+  --accent:#2563EB; --accent-ink:#FFFFFF; --accent-soft:#DCE8FD;
+  --good:#1FAE5D; --good-soft:#DEFBEA; --warn:#D97706; --warn-soft:#FEF3C7; --bad:#DC2626; --bad-soft:#FEE2E2;
+  --font-body:"Zen Kaku Gothic New","Hiragino Sans","Yu Gothic",system-ui,sans-serif;
+  --font-display:"Zen Kaku Gothic Antique","Hiragino Sans","Yu Gothic",system-ui,sans-serif;
+  --r:16px;
+  --shadow-sm:0 1px 2px rgba(15,17,21,.06);
+  --shadow-md:0 14px 34px -18px rgba(15,17,21,.35);
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0F1115; --surface:#181B22; --ink:#F1F2F6; --sub:#9BA0B4; --line:#2A2E3A;
+  --accent:#5B9CFF; --accent-ink:#0B1A33; --accent-soft:#1B2A42;
+  --good:#4ADE80; --good-soft:#123323; --warn:#FBBF24; --warn-soft:#3A2E0E; --bad:#FF8A8A; --bad-soft:#3A1416; color-scheme:dark;
+  --shadow-sm:0 1px 2px rgba(0,0,0,.4); --shadow-md:0 14px 34px -18px rgba(0,0,0,.65)}}
+:root[data-theme="dark"]{
+  --bg:#0F1115; --surface:#181B22; --ink:#F1F2F6; --sub:#9BA0B4; --line:#2A2E3A;
+  --accent:#5B9CFF; --accent-ink:#0B1A33; --accent-soft:#1B2A42;
+  --good:#4ADE80; --good-soft:#123323; --warn:#FBBF24; --warn-soft:#3A2E0E; --bad:#FF8A8A; --bad-soft:#3A1416; color-scheme:dark;
+  --shadow-sm:0 1px 2px rgba(0,0,0,.4); --shadow-md:0 14px 34px -18px rgba(0,0,0,.65)}
+*{box-sizing:border-box}
+html{color-scheme:light}
+body{margin:0;background:
+  radial-gradient(1100px 420px at 50% -120px, color-mix(in srgb, var(--accent) 7%, transparent), transparent 70%),
+  var(--bg);
+  color:var(--ink);font-family:var(--font-body);font-size:16px;line-height:1.75;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:0 64px}
+.wrap{max-width:860px;margin:0 auto}
+header.top{padding-block:32px 10px}
+.brand{font-size:12px;letter-spacing:.2em;color:var(--accent);font-weight:700}
+h1{font-family:var(--font-display);font-weight:900;font-size:clamp(34px,9vw,52px);line-height:1.2;margin:10px 0 2px;letter-spacing:-.02em;text-wrap:balance;color:var(--ink)}
+h1::after{content:"";display:block;width:64px;height:5px;border-radius:999px;background:var(--accent);margin:14px 0 4px}
+.lead{color:var(--sub);margin:0;max-width:62ch}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--bg)}
+nav.rail{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);padding-block:12px;margin-top:16px;border-bottom:1px solid var(--line)}
+.rail ol{list-style:none;margin:0;padding:4px;display:grid;grid-template-columns:repeat(8,1fr);gap:4px;background:var(--surface);border:1px solid var(--line);border-radius:999px;box-shadow:var(--shadow-sm)}
+.rail button{all:unset;cursor:pointer;display:block;text-align:center;font-size:11px;color:var(--sub);padding:7px 2px;border-radius:999px;line-height:1.3;transition:background .18s,color .18s}
+.rail button[aria-current="step"]{color:var(--accent-ink);background:var(--accent);font-weight:700;box-shadow:var(--shadow-sm)}
+.rail button.done:not([aria-current="step"]){color:var(--ink);background:var(--accent-soft)}
+.rail button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.rail .n{display:block;font-weight:700;font-size:13px;font-variant-numeric:tabular-nums}
+@media (max-width:480px){.rail .t{display:none}}
+section.step{padding-block:30px 8px}
+.kicker{display:inline-flex;align-items:center;gap:7px;font-size:12px;letter-spacing:.14em;font-weight:800;color:var(--accent-ink);background:var(--accent);padding:6px 14px 6px 11px;border-radius:999px;box-shadow:var(--shadow-sm)}
+.kicker::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--accent-ink);opacity:.9}
+h2{font-family:var(--font-display);font-weight:800;font-size:clamp(23px,5.2vw,30px);line-height:1.38;margin:12px 0 12px;letter-spacing:-.01em;text-wrap:balance;color:var(--ink)}
+h3{font-size:16px;margin:26px 0 10px;font-weight:700}
+p.note{color:var(--sub);margin:0 0 16px;max-width:62ch}
+.q{margin-top:24px}
+.q > .label{font-weight:700;margin-bottom:9px;display:block}
+.q > .hint{color:var(--sub);font-size:14px;margin:-4px 0 10px}
+.chips{display:flex;flex-wrap:wrap;gap:9px}
+.chip{position:relative}
+.chip input{position:absolute;opacity:0;inset:0;margin:0;cursor:pointer}
+.chip span{display:inline-block;padding:10px 16px;border:1.5px solid var(--line);border-radius:999px;background:var(--surface);font-size:15px;line-height:1.4;cursor:pointer;box-shadow:var(--shadow-sm);transition:border-color .15s,background .15s,box-shadow .15s,transform .15s}
+.chip span:hover{border-color:var(--accent)}
+.chip input:checked + span{border-color:var(--accent);background:var(--accent);color:var(--accent-ink);font-weight:700;box-shadow:var(--shadow-md);transform:translateY(-1px)}
+.chip input:focus-visible + span{outline:2px solid var(--accent);outline-offset:2px}
+textarea,input[type="text"],input[type="date"],select{width:100%;font:inherit;color:var(--ink);background:var(--surface);border:1.5px solid var(--line);border-radius:calc(var(--r) - 4px);padding:11px 13px;box-shadow:var(--shadow-sm)}
+textarea{min-height:76px;resize:vertical}
+textarea:focus,input:focus,select:focus{outline:2px solid var(--accent);outline-offset:1px;border-color:var(--accent)}
+.say{border-left:3px solid var(--accent);padding:12px 16px;background:var(--surface);border-radius:0 var(--r) var(--r) 0;margin:18px 0;font-size:15px;box-shadow:var(--shadow-sm)}
+.say b{display:block;font-size:12px;color:var(--accent);letter-spacing:.08em;margin-bottom:3px}
+.say.with-icon{display:flex;gap:11px;align-items:flex-start}
+.say.with-icon .mascot{width:30px;flex:none;margin-top:1px}
+.say.with-icon .txt{flex:1;min-width:0}
+.say .src{margin-top:8px;font-size:12px;color:var(--sub)}
+.say .src a{color:var(--sub)}
+.cal{margin-top:12px;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:14px 16px;box-shadow:var(--shadow-sm)}
+.calhead{display:flex;align-items:center;justify-content:center;gap:16px;font-weight:800;margin-bottom:10px;font-family:var(--font-display);color:var(--ink)}
+.calnav{all:unset;cursor:pointer;width:28px;height:28px;display:flex;align-items:center;justify-content:center;border-radius:50%;font-size:18px;color:var(--sub);line-height:1}
+.calnav:hover{background:var(--accent-soft);color:var(--accent)}
+.calgrid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
+.cdow{font-size:11px;color:var(--sub);text-align:center;font-weight:700;padding-bottom:4px}
+.cday{all:unset;box-sizing:border-box;width:100%;text-align:center;padding:9px 0;border-radius:8px;font-size:13px;cursor:pointer;color:var(--ink);position:relative;font-variant-numeric:tabular-nums}
+.cday.empty{cursor:default}
+.cday:not(.empty):hover{background:var(--accent-soft)}
+.cday.today{font-weight:800;box-shadow:inset 0 0 0 1.5px var(--accent)}
+.cday.sel{background:var(--accent);color:var(--accent-ink);font-weight:800;box-shadow:none}
+.cday.has:not(.sel)::after{content:"";position:absolute;bottom:3px;left:50%;transform:translateX(-50%);width:4px;height:4px;border-radius:50%;background:var(--accent)}
+.mascot{display:inline-block;line-height:0}
+.mascot img{display:block;width:100%;height:auto;filter:drop-shadow(0 2px 3px rgba(20,16,10,.18))}
+.brandrow{display:flex;align-items:center;gap:9px}
+.brandrow .mascot{width:40px;flex:none}
+.hero{display:flex;gap:14px;align-items:flex-start;margin:16px 0 20px}
+.hero .mascot{width:80px;flex:none}
+.hero .bubble{background:var(--surface);border:1px solid var(--line);border-radius:0 var(--r) var(--r) var(--r);padding:13px 16px;font-size:14px;color:var(--sub);box-shadow:var(--shadow-sm)}
+.finish{display:flex;gap:16px;align-items:flex-start;margin:16px 0 24px}
+.finish .mascot{width:96px;flex:none}
+.finish .bubble{background:var(--accent-soft);border:1px solid var(--line);border-radius:0 var(--r) var(--r) var(--r);padding:15px 18px;font-size:15px;box-shadow:var(--shadow-md)}
+.finish .bubble b{display:block;color:var(--accent);font-size:12px;letter-spacing:.06em;margin-bottom:4px}
+.railfoot{display:flex;align-items:center;gap:6px;margin:10px 4px 0;font-size:12px;color:var(--sub)}
+.railfoot .mascot{width:22px;flex:none}
+.actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:30px;align-items:center}
+.btn{font:inherit;font-weight:700;border-radius:999px;padding:12px 24px;border:1.5px solid var(--ink);background:var(--surface);color:var(--ink);cursor:pointer;box-shadow:var(--shadow-sm);transition:transform .15s,box-shadow .15s}
+.btn:hover{transform:translateY(-1px);box-shadow:var(--shadow-md)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.btn.ghost{border-color:transparent;color:var(--sub);padding-inline:8px;text-decoration:underline;background:transparent;box-shadow:none}
+.btn.ghost:hover{transform:none;box-shadow:none}
+.btn:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.btn:disabled{opacity:.45;cursor:not-allowed;transform:none;box-shadow:var(--shadow-sm)}
+.warnline{color:var(--bad);font-size:14px}
+.cands{display:grid;gap:13px;margin-top:16px}
+.cand{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:16px 18px;box-shadow:var(--shadow-sm);transition:box-shadow .15s}
+.cand:not(.out):hover{box-shadow:var(--shadow-md)}
+.cand.out{opacity:.68}
+.cand h4{margin:0;font-size:17px;display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.pill{font-size:12px;font-weight:700;border-radius:999px;padding:2px 10px;letter-spacing:.04em}
+.pill.ok{background:var(--good-soft);color:var(--good)}
+.pill.out{background:var(--bad-soft);color:var(--bad)}
+.pill.top{background:var(--accent-soft);color:var(--accent)}
+.pill.gig{background:var(--line);color:var(--ink)}
+.pill.asset{background:var(--warn-soft);color:var(--warn)}
+.cand ul{margin:8px 0 0;padding-left:1.2em;font-size:15px}
+.cand li.p::marker{color:var(--good)} .cand li.c::marker{color:var(--warn)} .cand li.x::marker{color:var(--bad)}
+.cand .meta{color:var(--sub);font-size:13px;margin-top:6px}
+.qgrid{display:grid;gap:14px;margin-top:16px}
+.qcard{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:16px 18px;box-shadow:var(--shadow-sm)}
+.qcard h4{margin:0 0 8px;font-size:17px;display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.qrow{margin-top:10px}
+.qrow .ql{font-size:15px;font-weight:500;margin-bottom:6px}
+.qrow .qh{font-size:13px;color:var(--sub);margin:-2px 0 6px}
+.verdict{margin-top:10px;font-size:14px;font-weight:700}
+.verdict.good{color:var(--good)} .verdict.bad{color:var(--bad)} .verdict.mid{color:var(--warn)}
+.field{margin-top:18px}
+.field label{display:block;font-weight:700;margin-bottom:6px}
+.field .hint{font-size:13px;color:var(--sub);margin:-2px 0 6px}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media (max-width:480px){.row2{grid-template-columns:1fr}}
+.track{margin-top:12px;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:14px 16px;box-shadow:var(--shadow-sm);max-height:280px;overflow-y:auto}
+.track-total{font-weight:800;font-family:var(--font-display);margin-bottom:10px;color:var(--ink)}
+.track-total span{color:var(--accent)}
+.track-row{display:grid;grid-template-columns:6.5em 1fr 1fr;gap:8px;padding:7px 0;border-top:1px solid var(--line);font-size:14px;font-variant-numeric:tabular-nums}
+.track-row:first-child{border-top:0}
+.track-row.head{font-size:12px;color:var(--sub);font-weight:700;font-variant-numeric:normal}
+.months{display:grid;gap:11px;margin-top:12px}
+.month{display:grid;grid-template-columns:72px 1fr;gap:12px;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:13px 15px;box-shadow:var(--shadow-sm)}
+.month .m{font-family:var(--font-display);font-weight:900;color:var(--accent);font-size:15px;line-height:1.5}
+.month p{margin:0;font-size:15px} .month .s{color:var(--sub);font-size:13px;margin-top:2px}
+.sheet{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:22px 22px 10px;margin-top:16px;box-shadow:var(--shadow-md)}
+.sheet h3{margin:0 0 10px;font-family:var(--font-display);font-size:19px}
+.sheet dl{margin:0;display:grid;grid-template-columns:minmax(7.5em,auto) 1fr;gap:0}
+.sheet dt,.sheet dd{margin:0;padding:10px 0;border-top:1px solid var(--line);font-size:15px}
+.sheet dt{color:var(--sub);font-weight:700;padding-right:14px}
+.sheet dd{min-width:0;white-space:pre-wrap}
+@media (max-width:480px){.sheet dl{grid-template-columns:1fr}.sheet dt{padding-bottom:0}.sheet dd{border-top:0;padding-top:2px}}
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:11px 20px;border-radius:999px;font-size:14px;z-index:20;box-shadow:var(--shadow-md)}
+.confirm{margin-top:12px;padding:13px 15px;border:1.5px solid var(--bad);border-radius:var(--r);background:var(--bad-soft);font-size:15px}
+.confirm .actions{margin-top:10px}
+footer.fine{color:var(--sub);font-size:13px;margin-top:44px;border-top:1px solid var(--line);padding-top:16px}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+
+
+<div class="wrap">
+  <header class="top">
+    <div class="brandrow">
+      <span class="mascot" aria-hidden="true"><img src="mascot.png" alt=""></span>
+      <div class="brand">F!ND｜副業スタイル 購入者特典</div>
+    </div>
+    <h1>副業スタイルナビ</h1>
+    <p class="lead">質問に答えていくと、まず3ヶ月試す副業を1つ選び、選んだ理由と、今日やること、3ヶ月の計画までが1枚にまとまります。かかる時間は15分ほど。正解を当てるためのツールではなく、自分で選ぶためのツールです。</p>
+  </header>
+
+  <nav class="rail" aria-label="ステップ">
+    <ol id="rail"></ol>
+    <div id="railfoot" class="railfoot"></div>
+  </nav>
+
+  <main id="main"></main>
+
+  <footer class="fine">
+    結果は、あなたが入力した条件をもとに候補を整理したものです。あなたに最適な副業を言い当てたり、収入を約束したりするものではありません。<br>
+    入力内容は、この端末・このブラウザの中にだけ自動で保存されます。閉じても消えないので、途中で中断して、あとから続きをやっても大丈夫です。別の端末やブラウザに移るときや、消えてしまうのが心配なときは、下の「バックアップを保存する」でファイルに保存し、「バックアップを読み込む」で元に戻してください。<br>
+    記事「副業スタイル｜自分に合った副業を見つけ、最初の一歩を踏み出すために」の手順（Part5〜7）に沿っています。
+    <div class="actions">
+      <button type="button" class="btn ghost" data-act="exportBackup">バックアップを保存する</button>
+      <button type="button" class="btn ghost" data-act="importBackupClick">バックアップを読み込む</button>
+      <input type="file" id="backupFile" accept="application/json" hidden>
+    </div>
+    <div id="backupConfirm"></div>
+  </footer>
+</div>
+<div id="toast" class="toast" hidden></div>
+
+<script>
+(function(){
+"use strict";
+const KEY="find-hajime-navi-v1";
+const STEPS=[
+  {t:"いまの気持ち"},{t:"始めたい理由"},{t:"自分の条件"},{t:"譲れない条件"},{t:"候補を見る"},{t:"1つに決める"},{t:"今日と3ヶ月"},{t:"3ヶ月サポート"}
+];
+const JOBS={
+  writer:{name:"Webライター",kind:"skill",path:"クラウドワークスやランサーズで「初心者OK」の案件に応募できる。周りに副業のことを話してみる",remain:"文章力、構成力、実績",
+    verify:"未経験でも、平日夜の時間だけで最初の案件を取れるか",
+    today:["クラウドワークスかランサーズに登録し、プロフィールを書く","初心者OKの案件を3件読んで、応募できそうなものに印をつける","noteに、自分の体験を1本書いてみる（ポートフォリオになる）"]},
+  video:{name:"動画編集",kind:"skill",path:"クラウドソーシングの動画編集案件、知り合いのSNS運用の手伝いなど",remain:"編集スキル、制作実績",
+    verify:"今のパソコンと使える時間で、1本を納期内に仕上げられるか",
+    today:["無料の編集ソフトを入れて、手元の動画で15秒の動画を1本作る","短い動画の案件を3件読んで、作業時間を見積もってみる","今のパソコンで編集ソフトが快適に動くか試す"]},
+  design:{name:"Webデザイン",kind:"skill",path:"基礎を学んだあと、バナー制作など小さな案件から。知り合いのお店のチラシやSNS画像",remain:"デザイン力、制作実績",
+    verify:"基礎を学びながら、架空の作品を3つ作れるか。小さな依頼を1件受けられるか",
+    today:["CanvaかFigmaを開いて、架空のバナーを1枚作る","好きなバナーを3枚集めて、なぜ見やすいかを書き出す","デザインの基礎を学べる本や講座を1つ決める"]},
+  blog:{name:"ブログ・アフィリエイト",kind:"grow",path:"自分のメディアを持ち、広告や商品紹介で収益化。最初は読まれる記事を積み上げる",remain:"記事という資産、発信力",
+    verify:"決めたテーマで、月4本の記事を3ヶ月書き続けられるか",
+    today:["書きたいテーマを1つ決め、「誰に、何を届けるか」を1文で書く","最初の記事のタイトルと見出しを考える","同じテーマのブログを3つ読んで、足りない情報を探す"]},
+  goods:{name:"物販・ハンドメイド販売",kind:"goods",path:"フリマアプリなどで、家にある不用品や作品を出品する",remain:"販売の経験",
+    verify:"手数料と送料を引いて、手元にいくら残るか。梱包・発送の手間が続けられる量か",
+    today:["家にある不用品を1つ出品する","売れたときの手数料と送料を計算しておく","作品を売るなら、同じジャンルの出品を5つ見て価格を調べる"]},
+  skill:{name:"スキル販売",kind:"skill",path:"ココナラなどにサービスを出品する。知り合いの困りごとを手伝う。地域で教室や相談を開く",remain:"評価、実績、リピーター",
+    verify:"「お金を払ってでも頼みたい」と言ってくれる人が、1人でも見つかるか",
+    today:["人に教えられること、代わりにできることを10個書き出す","その中で「頼まれたことがあるもの」に印をつける","ココナラで似たサービスを5つ見て、価格と内容を調べる"]}
+};
+const ORDER=["writer","video","design","blog","goods","skill"];
+function resolveJob(k){
+  if(k==="custom"){
+    const nm=S.customName||"自分で決めた副業";
+    return {name:nm,kind:"skill",
+      path:"あなたが考えている、依頼してくれる相手や売り先",
+      remain:"経験・実績",
+      verify:`${nm}で、最初の仕事や収入につながる道筋があるか`,
+      today:["今日やる30分を自分で決めて、下の欄に書く","関係する情報を1つ調べる","関係しそうな人・サービスを1つ探してみる"]};
+  }
+  return JOBS[k];
+}
+function purposeType(k){
+  // 記事Part6の分類に合わせる：「媒体や商品を育てる」＝ブログ・物販（asset）、「スキルを使って稼ぐ」＝それ以外（gig）。表示用語は記事と統一し、asset/gigは内部キーとしてのみ使う
+  const kind=resolveJob(k).kind;
+  return (kind==="grow"||kind==="goods")?"asset":"gig";
+}
+
+const FEEL=[
+  {id:"unknown",label:"何をしたいのかわからない",say:"それで大丈夫です。この先は「何がしたいか」ではなく「何なら続けられそうか」を順番に聞いていきます。答えているうちに、候補が自然と絞れていきます。"},
+  {id:"fear",label:"始める勇気が出ない",say:"怖いのは、失うものが見えていないからかもしれません。このツールでは、最後に「うまくいかなかったとき、失うものは小さいか」も確かめます。小さく始めれば、失うものも小さくて済みます。"},
+  {id:"research",label:"調べてばかりで動けない",say:"僕も、調べてはタブを閉じるのを半年、1年と繰り返していました。今日はこのツールの最後に「今日やる30分」を1つ決めます。調べるのはそこで終わりにしましょう。"},
+  {id:"notime",label:"時間がない気がする",say:"使える時間は、理想ではなく実際の時間で考えます。週3時間でも、選び方次第で始められる副業はあります。"},
+  {id:"failed",label:"前に試したけど続かなかった",say:"続かなかった経験は、次に選ぶための材料になります。何が合わなかったのかを思い出しながら答えてみてください。"}
+];
+const REASONS=["今の収入だけでは不安なので、生活に余裕を持たせたい","会社の給料だけに頼らず、別の収入源を持ちたい","今の仕事とは違うスキルを身につけ、将来の選択肢を増やしたい","会社の外でも、自分の力で稼げるという自信を持ちたい","いつか独立できる可能性を残しておきたい","新しい人と出会い、知らなかった世界を見てみたい"];
+const PURPOSE=[
+  ["gig","まずは収入につながる経験がほしい"],
+  ["asset","すぐの収入より、将来の自分の資産になるものを育てたい"],
+  ["both","両方とも気になる。まずはどちらかで試して確かめたい"]
+];
+const PURPOSE_LABEL={gig:"スキルを使って稼ぐ",asset:"媒体や商品を育てる",both:"スキルを使って稼ぐ・媒体や商品を育てるの両方"};
+const STORIES=[
+  {text:"最初に挑戦したブログは、投稿してもアクセスは一桁でした。成果が出ないことへの焦りと不安から、自分には向いていないと諦めました。",title:"副業3連敗からの逆転",url:"https://note.com/find_company/n/nac21fcc116a2"},
+  {text:"FXは、一回のトレードに一喜一憂せず、常にマイルールに従う。いわば自分自身との約束が守れるかどうかの戦いです。損失を恐れた僕は、自分自身に勝てませんでした。",title:"副業3連敗からの逆転",url:"https://note.com/find_company/n/nac21fcc116a2"},
+  {text:"実績ゼロの状態で文字単価の高い案件を狙っても落ちるだけです。まず確実に受注できる案件で実績を作り、それを足場に次の単価帯へ上がる。この順番が大事でした。",title:"副業3連敗からの逆転",url:"https://note.com/find_company/n/nac21fcc116a2"},
+  {text:"連絡をしっかり取っていたこと、納期を守っていたこと、修正が入ったときに真摯に対応していたこと。この積み重ねが、単価アップの提案につながったのだと思っています。",title:"副業3連敗からの逆転",url:"https://note.com/find_company/n/nac21fcc116a2"},
+  {text:"相場より極端に高い単価なのに仕事内容が曖昧。テストライティングの説明が抽象的。不合格通知と同時に別の案件を持ちかけられる。怪しい案件には、こうしたサインがありました。",title:"副業3連敗からの逆転",url:"https://note.com/find_company/n/nac21fcc116a2"},
+  {text:"1つの収入源に依存せず、複数で積み上げていく。それが、もしものときの支えになります。",title:"副業3連敗からの逆転",url:"https://note.com/find_company/n/nac21fcc116a2"},
+  {text:"今の自分のスキルを、まだ提案したことのない相手の悩みに当てはめたら、何ができるだろう。それだけで、今の仕事の外側に新しい形が見えてくることがあります。",title:"副業3連敗からの逆転",url:"https://note.com/find_company/n/nac21fcc116a2"},
+  {text:"まずは小さくてもいい。実績ゼロから積み上げるところから始めてみてください。今日の1つが、数ヶ月後には次の話につながっているかもしれません。",title:"副業3連敗からの逆転",url:"https://note.com/find_company/n/nac21fcc116a2"},
+  {text:"500円のレビューを書くために申し込んだだけのつもりが、リンクから申し込むと発注者側に成果報酬が入る仕組みでした。初心者だからって、何でも受けなくていい。それが学んだことです。",title:"「レビュー記事の執筆」は大きな罠だった。失敗から学んだ、ライターの実績作りで大切なこと",url:"https://note.com/find_company/n/naf94421fb062"},
+  {text:"休むことは、立ち止まることではないです。休むことをないがしろにしてきた3年間の分だけ、初めての3日間の休みが、すごく大きな意味を持つ時間になりました。",title:"3年間休まず副業を続けてきた僕が、初めて3日間完全に休んでみて気づいたこと",url:"https://note.com/find_company/n/n5d70840f7370"},
+  {text:"休むと決めたときは、『この3日間でせっかく積み上げてきたものが止まってしまうんじゃないか』と本気で不安でした。それでも、休んだことで見えてきたものがありました。",title:"3年間休まず副業を続けてきた僕が、初めて3日間完全に休んでみて気づいたこと",url:"https://note.com/find_company/n/n5d70840f7370"},
+  {text:"本質を見ずに、報酬や条件といった表面だけを追いかけると、いつか僕のように足元をすくわれてしまうかもしれません。",title:"文字単価3円の失敗案件で学んだ、Webライターの本質",url:"https://note.com/find_company/n/nb72a99fa5341"},
+  {text:"条件だけを見て応募する探し方自体が、当たり外れの大きいギャンブルなんじゃないか。そう思うようになりました。",title:"文字単価3円の失敗案件で学んだ、Webライターの本質",url:"https://note.com/find_company/n/nb72a99fa5341"},
+  {text:"Webライターの本質は、文章を書くことだけではなく、読者の悩みに寄り添い、解決の糸口を見つけることです。",title:"文字単価3円の失敗案件で学んだ、Webライターの本質",url:"https://note.com/find_company/n/nb72a99fa5341"},
+  {text:"単価交渉は、勇気だけで動くものではない。そして、言い方だけで決まるものでもない。",title:"単価を上げたいのに言い出せないフリーランスへ。「今なら言える！」を見極める3つの判断軸",url:"https://note.com/find_company/n/nad59280c2b56"},
+  {text:"単価交渉で本当に大事なのは、文面のきれいさだけではありません。それ以上に重要なのが、その交渉をしていい状態になっているかです。",title:"単価を上げたいのに言い出せないフリーランスへ。「今なら言える！」を見極める3つの判断軸",url:"https://note.com/find_company/n/nad59280c2b56"},
+  {text:"スキルは、始める前に持っていないといけないものじゃなくて、始めた後に手に入るものだと思います。",title:"思い込みを捨てたら、数百円の副業が月20万円になった",url:"https://note.com/find_company/n/n15f501713c4f"},
+  {text:"違ったのは、思い込みを抱えたまま、それでも応募してみたかどうかだけでした。",title:"思い込みを捨てたら、数百円の副業が月20万円になった",url:"https://note.com/find_company/n/n15f501713c4f"},
+  {text:"朝のうちに全体像を一度でも見ておくと、急な用事が入ったときにも、優先順位を考え直しやすくなります。",title:"本業と副業のタスク管理、僕は毎朝40分の通勤時間で整理している",url:"https://note.com/find_company/n/n41d2509e4cc8"},
+  {text:"その40分を『ただの移動時間』で終わらせず、『頭の中を整理する時間』として使えば、それなりに意味のある時間に変えられます。",title:"本業と副業のタスク管理、僕は毎朝40分の通勤時間で整理している",url:"https://note.com/find_company/n/n41d2509e4cc8"},
+  {text:"住んでいる場所は、ほとんど関係ありませんでした。",title:"「地方だから副業は不利」は思い込みだった。Webライターなら月10〜20万稼げる",url:"https://note.com/find_company/n/n77dcd0f8a935"},
+  {text:"地方に住んでいるかどうかより、オンラインで完結する仕事を選んでいるかどうかの方が、よほど大きな違いを生みます。",title:"「地方だから副業は不利」は思い込みだった。Webライターなら月10〜20万稼げる",url:"https://note.com/find_company/n/n77dcd0f8a935"},
+  {text:"大事なのは時間の量そのものではなく、『今どれだけの仕事があって、いつまでに仕上げればいいのか』を常に把握しておくことでした。",title:"家族がいても副業は続けられる。大事なのは「時間」より「把握」",url:"https://note.com/find_company/n/n8585695eedce"},
+  {text:"家族との時間を削って副業に充てるのではなく、仕事や家族との時間以外の隙間を、できるだけ副業に充てるようにしています。",title:"家族がいても副業は続けられる。大事なのは「時間」より「把握」",url:"https://note.com/find_company/n/n8585695eedce"},
+  {text:"同じ月3万円の副業収入でも、生活コストが違えば、その手応えはまったく変わります。",title:"地方に住んでいるからこそ、副業の「効き目」は大きいと思う",url:"https://note.com/find_company/n/n3b1c571ceb4f"},
+  {text:"都会と比べて何が足りないかではなく、今いる場所で何を活かせるか。その視点を持てるかどうかが、地方での副業を続けられるかの分かれ目だと感じています。",title:"地方に住んでいるからこそ、副業の「効き目」は大きいと思う",url:"https://note.com/find_company/n/n3b1c571ceb4f"},
+  {text:"『会社員を続けながら副業をする』というスタイルが、実はいちばん強い稼ぎ方なんじゃないか。そう思っています。",title:"会社員+副業は、いちばん強い稼ぎ方だと思う",url:"https://note.com/find_company/n/n4384a004d042"},
+  {text:"仕事を選ぶというのは、目の前の案件を受けるか断るかだけの話ではありません。何を選び、何を選ばないか。その積み重ねによって、自分の働き方や立ち位置も少しずつ形になっていきます。",title:"WEBライターが仕事を断っていいのはどんな時？スタバの革新的な「禁煙戦略」から学ぶ",url:"https://note.com/find_company/n/n3d348ea09d3c"},
+  {text:"『これは嫌だからやらない』ではなく、『自分はこれを大切にしたいから、こちらを選ぶ』という考え方です。",title:"WEBライターが仕事を断っていいのはどんな時？スタバの革新的な「禁煙戦略」から学ぶ",url:"https://note.com/find_company/n/n3d348ea09d3c"},
+  {text:"確定申告という言葉の響きのせいか、なんとなく『これで今年の税金関係は一区切りついた』という感覚があったのだと思います。",title:"副業の確定申告で8万円還付でラッキーと思っていたら、住民税10万円の通知が来て驚いた話",url:"https://note.com/find_company/n/n283e156cbd4b"},
+  {text:"還付金を見て『今年の税金はもう終わった』と安心するのではなく、『住民税の分は別にとっておく』くらいの心構えでいた方がいい。",title:"副業の確定申告で8万円還付でラッキーと思っていたら、住民税10万円の通知が来て驚いた話",url:"https://note.com/find_company/n/n283e156cbd4b"},
+  {text:"1記事10時間かかっていたリライトを見直したとき、変えたのはプロンプトの書き方よりも、進める順番でした。",title:"1記事10時間が3時間に。リライトをChatGPTで『半自動化』した全手順",url:"https://note.com/find_company/n/n03014ff1eabe"},
+  {text:"AIに勝てる能力を探すというより、自分が積み上げてきたものとAIをどう組み合わせるかを考える。",title:"何でもAIがやってくれる時代の、『自分の強み』の見つけ方",url:"https://note.com/find_company/n/n193a2c01ec56"},
+  {text:"『もし今の仕事がなくなったら、自分には何が残るだろう？』一度そんな視点で、自分の仕事を棚卸ししてみるのもいいかもしれません。",title:"何でもAIがやってくれる時代の、『自分の強み』の見つけ方",url:"https://note.com/find_company/n/n193a2c01ec56"},
+  {text:"『誰でも書ける記事しか書けないライター』だけが淘汰される、と思っています。",title:"WebライターはAIに淘汰されるのか？生き残るために必要なたった一つのこと",url:"https://note.com/find_company/n/na479da0f9920"},
+  {text:"残るのは、AIを道具として使いながら、自分にしか作れないものを届け続けられる人だと、僕は思っています。",title:"WebライターはAIに淘汰されるのか？生き残るために必要なたった一つのこと",url:"https://note.com/find_company/n/na479da0f9920"},
+  {text:"相手が今どこに困っているのか。何を先に用意しておけば確認の手間が減るのか。",title:"いつも行くファミマで、仕事ができる人の本質を見た",url:"https://note.com/find_company/n/nad5bf5b5f1a0"},
+  {text:"そこに、長く仕事が続く人と、一度きりで終わる人の分かれ目があるのかもしれません。",title:"いつも行くファミマで、仕事ができる人の本質を見た",url:"https://note.com/find_company/n/nad5bf5b5f1a0"},
+  {text:"未来をつくる人とは、見えた未来と現在の間にある空白を、たとえ小さくても、自分で埋め始める人なのではないでしょうか。",title:"未来を見るだけの人と、未来をつくる人は何が違うのか。キオクシアの原点に学ぶ",url:"https://note.com/find_company/n/n10e595d24d93"},
+  {text:"新しい強みを一から作るのではなく、今ある強みを、違う相手に、違う形で届ける。",title:"フリーランスは何社と契約すべき？紀伊國屋に学ぶ「仕事を増やさず、収入源を分ける」という考え方",url:"https://note.com/find_company/n/n7fbe8aba6537"},
+  {text:"それでは忙しさだけが増え、リスクは思ったほど分散されないかもしれません。",title:"フリーランスは何社と契約すべき？紀伊國屋に学ぶ「仕事を増やさず、収入源を分ける」という考え方",url:"https://note.com/find_company/n/n7fbe8aba6537"},
+  {text:"安いから来る人ではなく、これが気になるから来る人を、時間をかけて増やしていったのだと思います。",title:"ミスドが100円セールをやめてから、「もっちゅりん」が生まれるまでの10年",url:"https://note.com/find_company/n/n1df62b23bb3a"},
+  {text:"安売りは、相手を喜ばせます。でも、それを続けるほど、自分の利益を削り、自分の首を締めることにもなります。",title:"ミスドが100円セールをやめてから、「もっちゅりん」が生まれるまでの10年",url:"https://note.com/find_company/n/n1df62b23bb3a"},
+  {text:"企業のヒストリーには、必ず『地獄を見る時期』がある。",title:"企業のヒストリーを書くようになって、記事を作るのが楽しくなった話。",url:"https://note.com/find_company/n/n358c6aff6144"},
+  {text:"あなたの日常の一コマに共感したり、面白いと思っている人が、きっといます。",title:"企業のヒストリーを書くようになって、記事を作るのが楽しくなった話。",url:"https://note.com/find_company/n/n358c6aff6144"},
+  {text:"どうすればクライアントが喜んでくれるのか。何をすれば成果として現れるのか。自分ごとのように考えながら動く。",title:"我が家にカナヘビがやってきた話｜ビジネスのヒントは日常生活にある",url:"https://note.com/find_company/n/n7dd7ff59ac77"},
+  {text:"相手が何を求めているかを考え続けること。それだけです。",title:"我が家にカナヘビがやってきた話｜ビジネスのヒントは日常生活にある",url:"https://note.com/find_company/n/n7dd7ff59ac77"},
+  {text:"経営センスとは、正解を直感で言い当てる力ではなく、行動の結果から学び、次の一手へ変換する力なのかもしれません。",title:"ユニクロ・柳井正の経営センスはどこから来たのか？才能とは何かを考えてみる",url:"https://note.com/find_company/n/nc7fe33f75b1b"},
+  {text:"試す。失敗する。考える。学び直す。そして、仕組みを変える。",title:"ユニクロ・柳井正の経営センスはどこから来たのか？才能とは何かを考えてみる",url:"https://note.com/find_company/n/nc7fe33f75b1b"},
+  {text:"noteに関しては、書き手がどんな人間かを知ってもらうことも、読んでもらうためには大切な要素だと思っています。",title:"小学5年、夏。忘れられない思い出。",url:"https://note.com/find_company/n/n7a8aa03e5fe1"},
+  {text:"企業のヒストリーを書いて、自分の率直な意見をのせる。自分に置き換えて考えを伝える。そこに計算はいらない。",title:"名前だけでも覚えて帰ってください。あと、僕たちのことも知ってください！",url:"https://note.com/find_company/n/n48ca083addf9"},
+  {text:"繁忙期は忙しいのに、閑散期になると従業員の手が止まってしまう。知り合いのサッシ屋さんからそんな相談を受けたとき、普段Webライターとして培ってきたSNS運用やホームページ制作、公式LINEの活用を組み合わせて提案してみました。",title:"副業3連敗からの逆転",url:"https://note.com/find_company/n/nac21fcc116a2"},
+  {text:"やったのは、『原稿を書く』というライターの枠を一度外して、目の前の人が何に困っているかを聞き、自分が持っているスキルをそのまま当てはめて提案しただけです。",title:"副業3連敗からの逆転",url:"https://note.com/find_company/n/nac21fcc116a2"},
+  {text:"リユースメディアの業務委託は、Webライターの人員削減で1年ほどで契約終了になりました。当時の収入源はこれ一つだけだったので、正直どうしようかと困っていました。",title:"副業3連敗からの逆転",url:"https://note.com/find_company/n/nac21fcc116a2"},
+  {text:"この差は、特別な才能があったからではなく、文字単価と受注数を少しずつ積み上げてきた結果です。",title:"副業3連敗からの逆転",url:"https://note.com/find_company/n/nac21fcc116a2"},
+  {text:"切られた経験が、2人を引き合わせた。F!NDは『解雇』という危機から生まれたメディアです。",title:"F!NDはなぜ「副業・フリーランスのリアル」を発信しているのか",url:"https://note.com/find_company/n/n4bd63af20176"},
+  {text:"F!NDという名前に込めたのは、読んだ人が『そうだったのか』という発見を持って帰れるメディアにしたいという願いです。",title:"F!NDはなぜ「副業・フリーランスのリアル」を発信しているのか",url:"https://note.com/find_company/n/n4bd63af20176"},
+  {text:"一緒に仕事をしていく上で大切なことは、見た目や年齢、性別ではなく、仕事仲間に対してリスペクトができるかということでした。",title:"顔も名前も知らない相手と、メディアを作ることになった話",url:"https://note.com/find_company/n/n04c4c22c2516"},
+  {text:"肩書きや見た目ではなく、仕事そのものを通じて石橋さんを知ることができたからだと思います。",title:"顔も名前も知らない相手と、メディアを作ることになった話",url:"https://note.com/find_company/n/n04c4c22c2516"},
+  {text:"数ヶ月にわたって時給交渉をしていましたが、結果的に時給は上がりませんでした。正直に言うと、強い怒りを感じました。",title:"サイゼリヤが安さにこだわる本当の理由｜時給交渉に失敗した私が学んだこと",url:"https://note.com/find_company/n/n91305c41ffc9"},
+  {text:"『自分が何ができるか』を伝えることに、意識が向きすぎていました。",title:"サイゼリヤが安さにこだわる本当の理由｜時給交渉に失敗した私が学んだこと",url:"https://note.com/find_company/n/n91305c41ffc9"},
+  {text:"その効率化によって、相手が本当に求めている成果へどう近づけるのか。そこまで十分に結びつけて考えられていなかったのかもしれません。",title:"サイゼリヤが安さにこだわる本当の理由｜時給交渉に失敗した私が学んだこと",url:"https://note.com/find_company/n/n91305c41ffc9"},
+  {text:"クライアントや社会から価値を認めてもらえるかどうかは、別の問題です。",title:"サイゼリヤが安さにこだわる本当の理由｜時給交渉に失敗した私が学んだこと",url:"https://note.com/find_company/n/n91305c41ffc9"},
+  {text:"『相手は何を求めているのか』『どんな価値を与えたいのか』を思考の出発点にしたい。",title:"サイゼリヤが安さにこだわる本当の理由｜時給交渉に失敗した私が学んだこと",url:"https://note.com/find_company/n/n91305c41ffc9"}
+];
+
+const Q=[
+  {id:"time",label:"1. 副業に使える時間は、週に何時間？",hint:"理想ではなく、本業のあとに実際に使える時間で。",opts:[["t1","3時間未満"],["t2","3〜5時間"],["t3","5〜10時間"],["t4","10時間以上"]]},
+  {id:"cost",label:"2. 初期費用は、いくらまで出せる？",hint:"失っても生活に響かない金額で。",opts:[["c0","0円がいい"],["c1","1万円まで"],["c2","5万円まで"],["c3","それ以上も出せる"]]},
+  {id:"speed",label:"3. いつごろ収入が欲しい？",opts:[["s1","1か月以内"],["s2","3か月以内"],["s3","半年〜1年でいい"],["s4","急いでいない"]]},
+  {id:"skills",multi:true,label:"4. 苦にならないこと、得意なことは？（いくつでも）",hint:"仕事の経験でなくて構いません。昔から自然と続けてきたことも入ります。",opts:[["k_write","文章を書く・調べものをする"],["k_visual","動画や写真をいじる"],["k_design","見た目を整える・絵や配置を考える"],["k_teach","人に教えられる得意分野がある"],["k_sell","ものを選ぶ・売れるものを考える"],["k_none","特に思いつかない"]]},
+  {id:"fatigue",label:"5. 本業のあと、どれくらい余力が残る？",opts:[["f1","体は疲れるが、座ってする作業ならできる"],["f2","頭が疲れるので、手を動かす作業がいい"],["f3","ほとんど残らない"]]},
+  {id:"people",label:"6. 人とのやり取りは？",opts:[["p1","メッセージでのやり取りなら平気"],["p2","会話や対面も好き"],["p3","できるだけ少なくしたい"]]},
+  {id:"goal",label:"7. 今いちばん優先したいのは？",hint:"STEP2で答えた「スキルを使って稼ぐ／媒体や商品を育てる」とは別の質問です。あちらは働き方のタイプ、こちらはその中でも何を一番優先したいかを聞いています。",opts:[["g1","まずは収入"],["g2","将来につながるスキル"],["g3","好きなことを形にする"]]},
+  {id:"future",label:"8. 副業の先に考えている働き方は？",hint:"記事のPart4で考えた問いの答えを思い出してください。",opts:[["u1","今は会社員を続けたい"],["u2","いずれ独立も考えたい"],["u3","まだわからない"]]},
+  {id:"theme",label:"おまけ：長く発信したい、好きなテーマはある？",opts:[["th1","ある"],["th2","特にない"]]}
+];
+const HARD=[
+  {id:"h_cost",label:"初期費用をかけない"},
+  {id:"h_fast",label:"3か月以内に最初の収入がほしい"},
+  {id:"h_time",label:"週5時間以内で続けられる"},
+  {id:"h_people",label:"人とのやり取りは最小限"},
+  {id:"h_body",label:"体を使う作業は避けたい"},
+  {id:"h_learn",label:"一から学ぶ時間はかけたくない"},
+  {id:"h_theme",label:"好きなテーマで続けたい"}
+];
+
+const blank=()=>({step:0,feel:[],reason:"",reasonFree:"",purpose:"",a:{},hard:[],q3:{},pick:"",customName:"",why:"",verify:"",backup:"",today:"",todayFree:"",start:new Date().toISOString().slice(0,10),journal:[],journalDraft:"",journalHours:"",journalIncome:"",journalSel:"",calViewOffset:0});
+let S=load()||blank();
+function load(){try{const v=localStorage.getItem(KEY);return v?Object.assign(blank(),JSON.parse(v)):null}catch(e){return null}}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
+const $=s=>document.querySelector(s);
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const has=(id,v)=>{const x=S.a[id];return Array.isArray(x)?x.includes(v):x===v};
+const MASCOT=`<img src="mascot.png" alt="">`;
+const mascot=()=>`<span class="mascot" aria-hidden="true">${MASCOT}</span>`;
+
+/* ---------- evaluation ---------- */
+function evaluate(){
+  const res={};
+  for(const k of ORDER){res[k]={key:k,out:[],plus:[],caut:[],score:0}}
+  const H=new Set(S.hard);
+  const out=(k,m)=>res[k].out.push(m), plus=(k,m,n=1)=>{res[k].plus.push(m);res[k].score+=n}, caut=(k,m,n=1)=>{res[k].caut.push(m);res[k].score-=n};
+  // hard filters
+  if(H.has("h_cost")){out("video","編集に耐えるパソコンやソフトに費用がかかることがある");caut("blog","サーバー代など、月に数百〜千円ほどの費用がかかる");caut("goods","仕入れるなら費用がかかる。家の不用品なら0円で始められる");caut("design","ツールの有料プランが必要になることがある",0)}
+  if(H.has("h_fast")){out("blog","収益が出るまで、半年〜1年かかることが多い");out("design","仕事になるまでに、基礎を学ぶ期間がいる")}
+  if(H.has("h_time")){caut("video","1本の作業時間が長くなりがち。短い動画の案件なら収まることもある",2);caut("writer","長文の案件は時間がかかる。短い案件から選ぶ",0)}
+  if(H.has("h_people")){for(const k of ["writer","video","design","skill"]) out(k,"依頼者との連絡が前提になる仕事")}
+  if(H.has("h_body")){out("goods","梱包・発送で体を使う")}
+  if(H.has("h_learn")){out("design","デザインの基礎を学ぶ期間が必要");caut("video","編集ソフトの操作を覚える必要がある",1)}
+  if(H.has("h_theme")){for(const k of ["writer","video","design"]) out(k,"テーマは依頼に合わせることが多く、自分で選びにくい");plus("blog","好きなテーマで書き続けられる",2);plus("skill","得意なことをそのままサービスにできる")}
+  // soft from answers
+  if(has("skills","k_write")){plus("writer","文章や調べものが苦にならない",3);plus("blog","文章を書くのが苦にならない",1)}
+  if(has("skills","k_visual")){plus("video","動画や写真をいじるのが好き",3)}
+  if(has("skills","k_design")){plus("design","見た目を整えるのが好き",3)}
+  if(has("skills","k_teach")){plus("skill","人に教えられる得意分野がある",3)}else{caut("skill","「お金を払ってでも頼みたいこと」が何かを、先に整理する必要がある")}
+  if(has("skills","k_sell")){plus("goods","売れるものを考えるのが好き",3)}
+  if(has("speed","s1")||has("speed","s2")){plus("writer","案件が取れれば、比較的早くお金になる");plus("goods","不用品なら、すぐお金になる");if(!H.has("h_fast"))caut("blog","収益化に時間がかかる",2);if(!H.has("h_fast"))caut("design","基礎を学んでからお金になる",1)}
+  if(has("speed","s3")||has("speed","s4")){plus("blog","時間をかけて育てる余裕がある",2)}
+  if(has("cost","c0")&&!H.has("h_cost")){caut("video","パソコンやソフトに費用がかかることがある",2)}
+  if(has("time","t1")){caut("video","週3時間未満だと、1本を仕上げるのが難しいかもしれない",2);caut("design","学ぶ時間の確保が課題になる",1)}
+  if(has("fatigue","f1")){plus("writer","家で座ってできる作業");caut("goods","梱包・発送は体を使う")}
+  if(has("fatigue","f2")){plus("goods","手を動かす作業が中心");caut("writer","集中力を使う作業",0)}
+  if(has("people","p3")&&!H.has("h_people")){caut("writer","依頼者とのやり取りがある");caut("skill","依頼者とのやり取りがある");plus("blog","一人で進められる");plus("goods","やり取りは比較的少ない")}
+  if(has("people","p2")){plus("skill","対面の教室や相談の形もとれる")}
+  if(has("goal","g1")){plus("writer","やった分だけ報酬になる")}
+  if(has("goal","g2")){plus("writer","文章力・構成力が残る");plus("design","デザイン力が残る");plus("video","編集スキルが残る")}
+  if(has("goal","g3")){plus("blog","好きなことを形にしやすい",2);plus("goods","作品を売る形もある")}
+  if(has("future","u2")){plus("blog","自分のメディアは、独立後の収入源にもなる");plus("skill","自分のサービスとして育てられる")}
+  if(has("theme","th1")&&!H.has("h_theme")){plus("blog","好きなテーマがある",2)}
+  // 目的軸：記事Part6の分類と合わせる。「媒体や商品を育てる」＝ブログ・物販、「スキルを使って稼ぐ」＝ライター・動画・デザイン・スキル販売。speedではなく「何を実現したいか」の回答で判断する
+  if(S.purpose==="asset"){plus("blog","将来の資産を育てたいという目的に合っています",4);plus("goods","自分の商品というかたちで資産を育てたいという目的に合っています",4)}
+  if(S.purpose==="gig"){for(const k of ["writer","video","design","skill"]) plus(k,"仕事を受けて、すぐ収入につなげたいという目的に合っています",2)}
+  const list=ORDER.map(k=>res[k]);
+  const ok=list.filter(r=>!r.out.length).sort((a,b)=>b.score-a.score);
+  const ng=list.filter(r=>r.out.length);
+  return {ok,ng};
+}
+function timeTypeNote(){
+  return (has("speed","s1")&&has("fatigue","f3"))||(S.hard.includes("h_fast")&&has("fatigue","f3"));
+}
+
+/* ---------- rendering ---------- */
+function rail(){
+  $("#rail").innerHTML=STEPS.map((s,i)=>`<li><button type="button" data-go="${i}" ${i===S.step?'aria-current="step"':''} class="${i<S.step?'done':''}"><span class="n">${i+1}</span><span class="t">${s.t}</span></button></li>`).join("");
+  $("#railfoot").innerHTML=`${mascot()}<span>STEP ${S.step+1}/${STEPS.length} を進行中</span>`;
+}
+function chips(name,opts,multi,cur){
+  return `<div class="chips" role="group">`+opts.map(([v,l])=>{
+    const on=multi?(cur||[]).includes(v):cur===v;
+    return `<label class="chip"><input type="${multi?"checkbox":"radio"}" name="${name}" value="${esc(v)}" ${on?"checked":""}><span>${esc(l)}</span></label>`}).join("")+`</div>`;
+}
+function nav(prevOk,nextLabel,nextDisabled,warn){
+  return `<div class="actions">${S.step>0?`<button type="button" class="btn" data-act="prev">戻る</button>`:""}${nextLabel?`<button type="button" class="btn primary" data-act="next" ${nextDisabled?"disabled":""}>${nextLabel}</button>`:""}${warn?`<span class="warnline">${warn}</span>`:""}</div>`;
+}
+const views=[];
+views[0]=()=>{
+  const says=FEEL.filter(f=>S.feel.includes(f.id)).map(f=>`<div class="say"><b>F!NDより</b>${esc(f.say)}</div>`).join("");
+  return `<div class="kicker">STEP 1</div><h2>今のあなたに近いものは？</h2>
+  <div class="hero">${mascot()}<div class="bubble">ここから8つのステップで、あなたの一歩を一緒に整理していきます。迷ったら、上の帯からいつでも前のステップに戻れます。</div></div>
+  <p class="note">いくつ選んでも構いません。選ばずに進んでも大丈夫です。</p>
+  ${chips("feel",FEEL.map(f=>[f.id,f.label]),true,S.feel)}
+  ${says}
+  <div class="actions"><button type="button" class="btn primary" data-act="next">はじめる</button></div>`;
+};
+views[1]=()=>`<div class="kicker">STEP 2</div><h2>副業を始めたい、一番の理由は？</h2>
+  <p class="note">立派な理由である必要はありません。この先、迷ったときに立ち返る場所になります。</p>
+  ${chips("reason",REASONS.map(r=>[r,r]),false,S.reason)}
+  <div class="field"><label for="reasonFree">自分の言葉で書くなら（任意）</label>
+  <input type="text" id="reasonFree" data-bind="reasonFree" value="${esc(S.reasonFree)}" placeholder="例：子どもの習い事の費用を、自分で用意したい"></div>
+  <div class="q">
+    <span class="label">副業で、何を実現したいですか？</span>
+    <div class="hint">ここから先、候補を選ぶときの中心になります（次のSTEPで聞く「今いちばん優先したいこと」とは別の質問です）。</div>
+    ${chips("purpose",PURPOSE,false,S.purpose)}
+    <div class="say with-icon">${mascot()}<div class="txt"><b>F!NDより</b>副業には大きく2つのタイプがあります。<strong>スキルを使って稼ぐ</strong>（Webライター・動画編集・Webデザイン・スキル販売）は、仕事を受けて、その分の報酬をもらう働き方。<strong>媒体や商品を育てる</strong>（ブログ・アフィリエイト・物販やハンドメイドの販売）は、自分のメディアや商品を育てて、時間をかけて積み上がっていく働き方。どちらが優れているということはなく、何を実現したいかによって、合う方が変わります。</div></div>
+  </div>
+  ${nav(true,"次へ",false)}`;
+views[2]=()=>{
+  const done=Q.filter(q=>q.id!=="theme").every(q=>q.multi?(S.a[q.id]||[]).length:S.a[q.id]);
+  return `<div class="kicker">STEP 3</div><h2>自分の条件を書き出す</h2>
+  <p class="note">記事のPart5の「8つの軸」です。曖昧でも、今の自分に一番近いものを選んでください。</p>
+  ${Q.map(q=>`<div class="q"><span class="label">${q.label}</span>${q.hint?`<div class="hint">${q.hint}</div>`:""}${chips(q.id,q.opts,!!q.multi,S.a[q.id])}</div>`).join("")}
+  ${nav(true,"次へ",!done,done?"":"1〜8に答えると進めます")}`;
+};
+views[3]=()=>{
+  const sug=[]; if(has("cost","c0"))sug.push("h_cost"); if(has("speed","s1")||has("speed","s2"))sug.push("h_fast"); if(has("time","t1")||has("time","t2"))sug.push("h_time"); if(has("people","p3"))sug.push("h_people"); if(has("theme","th1")&&has("goal","g3"))sug.push("h_theme");
+  const n=S.hard.length;
+  return `<div class="kicker">STEP 4</div><h2>「これが満たせないなら続かない」条件は？</h2>
+  <p class="note">まずは2つ選ぶのがおすすめです。3つ以上選ぶと、ほとんどの候補が残らなくなります。ただし、生活上どうしても外せない条件がほかにもあるなら、それも選んでください。</p>
+  ${chips("hard",HARD.map(h=>[h.id,h.label+(sug.includes(h.id)?"（答えから見て候補）":"")]),true,S.hard)}
+  ${n>2?`<div class="say with-icon">${mascot()}<div class="txt"><b>メモ</b>${n}つ選んでいます。候補が残らなかったら、ここに戻って1つ外してみてください。</div></div>`:""}
+  ${nav(true,"候補を見る",n===0,n===0?"1つ以上選ぶと進めます":"")}`;
+};
+views[4]=()=>{
+  const {ok,ng}=evaluate();
+  const top=ok.slice(0,3).map(r=>r.key);
+  const typePill=k=>purposeType(k)==="asset"?'<span class="pill asset">媒体や商品を育てる</span>':'<span class="pill gig">スキルを使って稼ぐ</span>';
+  const card=(r,i)=>`<div class="cand ${r.out.length?"out":""}"><h4>${esc(JOBS[r.key].name)} ${typePill(r.key)}${r.out.length?'<span class="pill out">外れる</span>':(i===0?'<span class="pill top">条件に一番近い</span>':'<span class="pill ok">残る</span>')}</h4>
+    <ul>${r.out.map(m=>`<li class="x">${esc(m)}</li>`).join("")}${r.plus.map(m=>`<li class="p">${esc(m)}</li>`).join("")}${r.caut.map(m=>`<li class="c">注意：${esc(m)}</li>`).join("")}</ul>
+    ${r.out.length?"":`<div class="meta">続けた先に残るもの：${esc(JOBS[r.key].remain)}</div>`}</div>`;
+  const purposeNote=S.purpose?`<div class="say with-icon">${mascot()}<div class="txt"><b>あなたが実現したいこと</b>「${esc(PURPOSE.find(p=>p[0]===S.purpose)[1])}」と答えました。${S.purpose==="asset"?"なので、時間をかけて育てる「媒体や商品を育てる」（ブログ・アフィリエイト・物販）タイプを優先して見ていきましょう。":S.purpose==="gig"?"なので、仕事を受けてすぐ収入につながる「スキルを使って稼ぐ」タイプを優先して見ていきましょう。":"両方に関心があるとのことなので、まずはどちらか1つで「本当に目的に合っているか」を確かめることを優先します。候補はその判断材料として並べています。"}</div></div>`:`<div class="say with-icon">${mascot()}<div class="txt"><b>目的を選んでいません</b>STEP2で「副業で何を実現したいか」を選ぶと、「スキルを使って稼ぐ」「媒体や商品を育てる」のどちらを優先するといいか、ここに表示されます。戻って選び直すこともできます。</div></div>`;
+  return `<div class="kicker">STEP 5</div><h2>条件でふるいにかけた結果</h2>
+  <p class="note">譲れない条件に合わないものを外し、残ったものを「できれば満たしたい条件」に多く当てはまる順に並べました。並び順は目安です。ランキングではありません。</p>
+  ${purposeNote}
+  ${timeTypeNote()?`<div class="say"><b>F!NDより</b>「とにかく早く現金が欲しい」「本業でほとんど余力が残らない」に強く寄っているなら、働いた時間がそのまま収入になるアルバイトなどの方が合っているかもしれません。それも立派な選択です。</div>`:""}
+  ${ok.length?`<h3>残った候補（${ok.length}つ）</h3><div class="cands">${ok.map(card).join("")}</div>`:`<div class="say with-icon">${mascot()}<div class="txt"><b>候補が残りませんでした</b>譲れない条件を1つ外すか、このツールで扱っていない副業（アルバイトや地域の仕事など）にも目を向けてみてください。どちらも立派な選択です。</div></div>`}
+  ${ng.length?`<h3>外れた候補</h3><div class="cands">${ng.map(card).join("")}</div>`:""}
+  <div class="say with-icon">${mascot()}<div class="txt"><b>リストにない副業を考えている方へ</b>この6つに当てはまらなくても構いません。すでに試したい副業が決まっているなら、名前を書いて進めてください。</div></div>
+  <div class="field"><label for="customName">試したい副業の名前</label><input type="text" id="customName" data-bind="customName" value="${esc(S.customName)}" placeholder="例：ハンドメイドアクセサリー販売"></div>
+  <div class="actions"><button type="button" class="btn" data-act="pickCustom">この副業で進める</button></div>
+  ${nav(true,ok.length?`上位${Math.min(3,ok.length)}つで、最後の1つを決める`:"",!ok.length)}`;
+};
+const A3=[
+  {id:"today",l:"今日、30分でできる最初の一歩が思い浮かび、やる自分を想像しても気が重くならない？",h:"大きな目標でなく、「登録する」「1件調べる」のような今日すぐできる具体的な行動が思い浮かぶか、という質問です。",o:[["y","はい"],["m","少し重い"],["n","いいえ"]]},
+  {id:"path",l:"最初の仕事や収入につながる道筋が、ぼんやりとでも見えている？",o:[["y","見えている"],["m","ぼんやり"],["n","まったく見えない"]]},
+  {id:"loss",l:"うまくいかなかったとき、失うお金や時間は小さい？",h:"3ヶ月やってみて、まったく稼げなかったとしても、使った初期費用や時間が生活に大きな影響を与えない範囲か、という質問です。",o:[["y","はい"],["n","いいえ"]]}
+];
+function verdict(k){
+  const a=S.q3[k]||{};
+  if(!a.today||!a.path||!a.loss) return null;
+  if(a.path==="n") return {cls:"bad",t:"道筋がまったく見えないので、いったん候補から外します",yes:-1};
+  const yes=["today","path","loss"].filter(x=>a[x]==="y").length;
+  return {cls:yes===3?"good":"mid",t:yes===3?"3つとも「はい」。まず試す候補です":`「はい」は${yes}つ`+(a.path==="m"?"。道筋を確かめることを、3ヶ月の最優先にします":""),yes};
+}
+views[5]=()=>{
+  if(S.pick==="custom"){
+    const k="custom"; const v=verdict(k); const name=S.customName||"（名前未入力）";
+    if(v&&v.yes>=0){
+      const J=resolveJob(k);
+      if(!S.why) S.why=`${name}を試す`;
+      if(!S.verify) S.verify=(((S.q3[k]||{}).path==="m")?"最初の仕事（売る場所）への道筋が見つかるか。そのうえで、":"")+J.verify;
+    }
+    return `<div class="kicker">STEP 6</div><h2>最後の1つは、3つの質問で決める</h2>
+    <p class="note">「${esc(name)}」について、3つの質問に答えてください。2つめの「道筋」だけは特に大事です。</p>
+    <div class="qgrid"><div class="qcard"><h4>${esc(name)}</h4>
+      ${A3.map(q=>`<div class="qrow"><div class="ql">${q.l}</div>${q.h?`<div class="qh">${esc(q.h)}</div>`:""}${chips("q3_"+k+"_"+q.id,q.o,false,(S.q3[k]||{})[q.id])}</div>`).join("")}
+      ${v?`<div class="verdict ${v.cls}">${esc(v.t)}</div>`:""}</div></div>
+    ${v&&v.yes>=0?`<div class="field"><label for="why">選んだ理由（1文）</label><div class="hint">自分の言葉で説明できれば、あなたが選んだ副業です。</div><textarea id="why" data-bind="why">${esc(S.why)}</textarea></div>
+      <div class="field"><label for="verify">3ヶ月で確かめたいこと（1文）</label><textarea id="verify" data-bind="verify">${esc(S.verify)}</textarea></div>
+      <div class="field"><label for="backup">控え（決まっていれば）</label><input type="text" id="backup" data-bind="backup" value="${esc(S.backup)}"></div>`
+    :v&&v.yes<0?`<div class="say"><b>いったん立ち止まりましょう</b>道筋がまったく見えない状態だと、3ヶ月続けるのは難しいかもしれません。誰に・どこで届けるかを先に考えてみてください。</div>`
+    :`<p class="note" style="margin-top:16px">3つの質問に答えると、次に進めます。</p>`}
+    <div class="actions"><button type="button" class="btn" data-act="prev">戻る</button><button type="button" class="btn ghost" data-act="backToList">候補リストから選び直す</button>${v&&v.yes>=0?`<button type="button" class="btn primary" data-act="next">今日と3ヶ月の計画へ</button>`:""}</div>`;
+  }
+  const {ok}=evaluate(); const top=ok.slice(0,3).map(r=>r.key);
+  const scored=top.map(k=>({k,v:verdict(k)})).filter(x=>x.v&&x.v.yes>=0).sort((a,b)=>b.v.yes-a.v.yes);
+  const allAnswered=top.every(k=>verdict(k));
+  const best=scored[0]?.k||"";
+  if(allAnswered&&!S.pick&&best){S.pick=best; autoFill(true)}
+  const valid=scored.map(x=>x.k);
+  return `<div class="kicker">STEP 6</div><h2>最後の1つは、3つの質問で決める</h2>
+  <p class="note">条件の数ではなく、「今日動けるか」で決めます。2つめの「道筋」だけは特に大事です。生活に合っていても、頼んでくれる相手や売る場所がなければ収入にはならないからです。</p>
+  <div class="qgrid">${top.map(k=>{const v=verdict(k);return `<div class="qcard"><h4>${esc(JOBS[k].name)} ${purposeType(k)==="asset"?'<span class="pill asset">媒体や商品を育てる</span>':'<span class="pill gig">スキルを使って稼ぐ</span>'}</h4>
+    ${A3.map(q=>`<div class="qrow"><div class="ql">${q.l}</div>${q.h?`<div class="qh">${esc(q.h)}</div>`:""}${q.id==="path"?`<div class="qh">道筋の例：${esc(JOBS[k].path)}</div>`:""}${chips("q3_"+k+"_"+q.id,q.o,false,(S.q3[k]||{})[q.id])}</div>`).join("")}
+    ${v?`<div class="verdict ${v.cls}">${esc(v.t)}</div>`:""}</div>`}).join("")}</div>
+  ${allAnswered?(valid.length?`<h3>まず試す1つ</h3>
+    ${chips("pick",valid.map(k=>[k,JOBS[k].name+(k===best?"（質問の答えが一番いい）":"")]),false,S.pick)}
+    <div class="field"><label for="why">選んだ理由（1文）</label><div class="hint">自分の言葉で説明できれば、おすすめに流された選択ではなく、あなたが選んだ副業です。</div><textarea id="why" data-bind="why">${esc(S.why)}</textarea></div>
+    <div class="field"><label for="verify">3ヶ月で確かめたいこと（1文）</label><textarea id="verify" data-bind="verify">${esc(S.verify)}</textarea></div>
+    <div class="field"><label for="backup">控え（選ばなかった候補）</label><input type="text" id="backup" data-bind="backup" value="${esc(S.backup)}"></div>
+    `:`<div class="say"><b>残る候補がありません</b>道筋が見えない候補だけが残りました。STEP4に戻って条件を見直すか、道筋が見えそうな候補を探してみてください。</div>`):`<p class="note" style="margin-top:16px">すべての質問に答えると、まず試す1つを選べます。</p>`}
+  ${nav(true,"今日と3ヶ月の計画へ",!(allAnswered&&S.pick))}`;
+};
+function autoFill(force){
+  const k=S.pick; if(!k) return;
+  const H=S.hard.map(h=>HARD.find(x=>x.id===h).label);
+  const r=evaluate().ok.find(x=>x.key===k);
+  const pt=(r&&r.plus.length)?r.plus[0]:"";
+  const cond=H.length?H.slice(0,2).map(h=>`「${h}」`).join("")+"という条件に合い、":"";
+  if(force||!S.why) S.why=`${cond}${pt?pt+"ので、":""}${JOBS[k].name}を試す`;
+  const a=S.q3[k]||{};
+  if(force||!S.verify) S.verify=(a.path==="m"?"最初の仕事（売る場所）への道筋が見つかるか。そのうえで、":"")+JOBS[k].verify;
+  const {ok}=evaluate(); const other=ok.map(x=>x.key).filter(x=>x!==k && (verdict(x)?.yes??0)>=0);
+  if(force||!S.backup) S.backup=other.length?JOBS[other[0]].name:"なし";
+  if(force) S.today="";
+}
+function addMonths(iso,n){const d=new Date(iso+"T00:00:00");if(isNaN(d))return "";const m=d.getMonth()+n;d.setMonth(m);return `${d.getFullYear()}年${d.getMonth()+1}月${d.getDate()}日`}
+function months(J){
+  const kind=J.kind, nm=J.name, asset=(kind==="grow"||kind==="goods");
+  const m1={
+    t:asset?"続けられる環境を整え、最初の一歩を形にする":"受注できる環境を整え、最初の応募をする",
+    s:nm==="Webライター"?"プロフィールを整えて、案件に10件応募する":"決めた時間を、実際に確保できたかを見る"
+  };
+  const m2=kind==="grow"
+    ?{t:"決めた本数を公開し、発信への反応を記録する",s:"報酬はまだ問いません。続けられたか、読まれた数や反応が少しでも動いたか、改善のヒントが見つかったかを見る"}
+    :kind==="goods"
+      ?{t:"1つ売って、手元に残った額を記録する",s:"売れた金額ではなく、手数料と送料を引いた額を見る"}
+      :{t:"応募から受注までの流れを確かめる",s:"金額は問いません。応募先との相性、返信の速さ、受注までの流れが1回通ったかを見る"};
+  const m3=asset
+    ?{t:"続けるかを判断する材料を集める",s:kind==="goods"?"作業時間、手元に残った利益、しんどさに加えて、同じ商品やジャンルがまた売れそうかも記録する":"作業を継続できたか、発信に反応があったか、改善の手がかりを得られたかを記録する"}
+    :{t:"続けるかを判断する材料を集める",s:"作業時間、報酬（利益）、しんどさに加えて、同じ依頼主からまた頼まれそうかも記録する"};
+  return [m1,m2,m3];
+}
+views[6]=()=>{
+  const k=S.pick; if(!k) return `<p class="note">STEP6で「まず試す1つ」を選んでください。</p>${nav(true)}`;
+  const J=resolveJob(k); const ms=months(J); const review=addMonths(S.start,3);
+  const fear=S.feel.includes("fear")?`<div class="say"><b>F!NDより</b>うまくいかなかったときに失うのは、この3ヶ月の空き時間と、${has("cost","c0")?"ほぼ0円":"決めた予算の範囲"}だけです。最初の30分は、誰にも見せなくて構いません。</div>`:"";
+  return `<div class="kicker">STEP 7</div><h2>今日やることと、3ヶ月の計画</h2>
+  <div class="finish">${mascot()}<div class="bubble"><b>よくここまで進めました</b>「${esc(J.name)}」（${purposeType(k)==="asset"?"媒体や商品を育てる":"スキルを使って稼ぐ"}タイプ）を選び、理由も言葉にできました。この3ヶ月は、その選択が自分の目的に合っているかを確かめる期間です。あとは今日の30分を決めるだけ。考えるフェーズから、動くフェーズです。</div></div>
+  <p class="note">最初から大きな目標はいりません。今日できる30分を1つだけ決めます。</p>
+  ${fear}
+  <div class="q"><span class="label">今日やる30分（1つ選ぶか、自分で書く）</span>${chips("today",J.today.map(t=>[t,t]),false,S.today)}
+  <div class="field"><label for="todayFree">自分で書くなら</label><input type="text" id="todayFree" data-bind="todayFree" value="${esc(S.todayFree)}" placeholder="例：今夜21時から30分、登録だけ済ませる"></div></div>
+  <div class="field"><label for="start">始める日</label><input type="date" id="start" data-bind="start" value="${esc(S.start)}"></div>
+  <h3>3ヶ月の小さなゴール</h3>
+  <div class="months">${ms.map((m,i)=>`<div class="month"><div class="m">${i+1}か月目</div><div><p>${esc(m.t)}</p><div class="s">${esc(m.s)}</div></div></div>`).join("")}</div>
+  <div class="say with-icon">${mascot()}<div class="txt"><b>振り返る日</b>${review?esc(review):"始める日を入れてください"}に、「生活との相性」「仕事としての手応え」「続ける見込み」の3つを見て、続ける／やり方を変える／控えに切り替える、から選びます。週に1回10分、使った時間とやったこと、しんどかったことを一行ずつメモしておくと、判断がずっと楽になります。</div></div>
+  ${sheet()}
+  <div class="actions"><button type="button" class="btn" data-act="prev">戻る</button><button type="button" class="btn primary" data-act="copy">結果をコピーする</button><button type="button" class="btn ghost" data-act="reset">最初からやり直す</button></div>
+  <div id="confirmBox"></div>
+  <div class="actions" style="margin-top:14px"><button type="button" class="btn primary" data-act="next">3ヶ月サポートへ</button></div>`;
+};
+function todayISO(){return new Date().toISOString().slice(0,10)}
+function dayOfYear(){const d=new Date();const start=new Date(d.getFullYear(),0,0);return Math.floor((d-start)/86400000)}
+function pad2(n){return String(n).padStart(2,"0")}
+function calendarHTML(){
+  const base=new Date();
+  const view=new Date(base.getFullYear(), base.getMonth()+S.calViewOffset, 1);
+  const y=view.getFullYear(), m=view.getMonth();
+  const first=new Date(y,m,1);
+  const startDow=first.getDay();
+  const numDays=new Date(y,m+1,0).getDate();
+  const todayStr=todayISO();
+  const entryDates=new Set(S.journal.map(e=>e.date));
+  const cells=[];
+  for(let i=0;i<startDow;i++) cells.push('<div class="cday empty"></div>');
+  for(let d=1;d<=numDays;d++){
+    const dateStr=`${y}-${pad2(m+1)}-${pad2(d)}`;
+    const has=entryDates.has(dateStr);
+    const isToday=dateStr===todayStr;
+    const isSel=dateStr===S.journalSel;
+    cells.push(`<button type="button" class="cday${has?" has":""}${isToday?" today":""}${isSel?" sel":""}" data-act="selectDay" data-date="${dateStr}">${d}</button>`);
+  }
+  return `<div class="cal"><div class="calhead"><button type="button" class="calnav" data-act="calPrev" aria-label="前の月">‹</button><span>${y}年${m+1}月</span><button type="button" class="calnav" data-act="calNext" aria-label="次の月">›</button></div><div class="calgrid">${["日","月","火","水","木","金","土"].map(w=>`<div class="cdow">${w}</div>`).join("")}${cells.join("")}</div></div>`;
+}
+function trackSummary(){
+  const entries=S.journal.filter(e=>(Number(e.hours)||0)>0||(Number(e.income)||0)>0).sort((a,b)=>a.date<b.date?-1:1);
+  if(!entries.length) return `<p class="note">時間や収入を記録すると、ここに一覧と合計が表示されます。</p>`;
+  const totalH=entries.reduce((s,e)=>s+(Number(e.hours)||0),0);
+  const totalI=entries.reduce((s,e)=>s+(Number(e.income)||0),0);
+  return `<div class="track">
+    <div class="track-total">合計時間：<span>${totalH}時間</span>　合計収入：<span>${totalI.toLocaleString()}円</span></div>
+    <div class="track-row head"><div>日付</div><div>時間</div><div>収入</div></div>
+    ${entries.map(e=>`<div class="track-row"><div>${esc(e.date)}</div><div>${e.hours?esc(e.hours)+"時間":"—"}</div><div>${e.income?Number(e.income).toLocaleString()+"円":"—"}</div></div>`).join("")}
+  </div>
+  <p class="note">収入は経費や税金を引く前の金額です。</p>`;
+}
+views[7]=()=>{
+  const k=S.pick; if(!k) return `<p class="note">STEP6・STEP7で「まず試す1つ」と今日やることを決めてから、ここに来てください。</p>${nav(true)}`;
+  if(!S.journalSel) S.journalSel=todayISO();
+  const J=resolveJob(k);
+  const story=STORIES[dayOfYear()%STORIES.length];
+  const selDate=S.journalSel;
+  const selEntry=S.journal.find(e=>e.date===selDate);
+  return `<div class="kicker">STEP 8</div><h2>3ヶ月サポート</h2>
+  <div class="finish">${mascot()}<div class="bubble"><b>ここからは3ヶ月の伴走です</b>「${esc(J.name)}」を試しているあなたへ、毎日この1ページを覗いてみてください。今日の一言を記録して、F!NDメンバーの失敗談を1つ読む。それだけで大丈夫です。</div></div>
+  <h3>一言日記と、収入・時間の記録</h3>
+  <p class="note">カレンダーの日付を選ぶと、その日の記録を書けます。あとから選び直して編集もできます。</p>
+  ${calendarHTML()}
+  <div class="field"><label for="journalDraft">${esc(selDate)}の一言</label><textarea id="journalDraft" data-bind="journalDraft" placeholder="例：案件に3件応募した。緊張したけど出せた">${esc(S.journalDraft)}</textarea></div>
+  <div class="row2">
+    <div class="field"><label for="journalHours">作業時間（時間、任意）</label><input type="number" min="0" step="0.5" inputmode="decimal" id="journalHours" data-bind="journalHours" value="${esc(S.journalHours)}" placeholder="例：1.5"></div>
+    <div class="field"><label for="journalIncome">収入（円、任意）</label><input type="number" min="0" step="1" inputmode="numeric" id="journalIncome" data-bind="journalIncome" value="${esc(S.journalIncome)}" placeholder="例：500"></div>
+  </div>
+  <div class="actions"><button type="button" class="btn primary" data-act="addJournal">${selEntry?"この日の記録を更新する":"記録する"}</button>${selEntry?`<button type="button" class="btn ghost" data-act="deleteJournal">この日の記録を削除</button>`:""}</div>
+  <h3>収入と時間の記録</h3>
+  <p class="note">上で入力した作業時間と収入を、日付ごとに一覧にしています。週1回のメモと一緒に、3ヶ月後の振り返りに使ってください。</p>
+  ${trackSummary()}
+  <h3>F!NDメンバーの失敗談・気づき</h3>
+  <div class="say with-icon">${mascot()}<div class="txt"><b>F!NDより</b>${esc(story.text)}<div class="src">出典：<a href="${story.url}" target="_blank" rel="noopener">${esc(story.title)}</a>（note／F!ND）</div></div></div>
+  <p class="note">※この一言は日替わりで入れ替わります。毎日少しずつ読んでみてください。</p>
+  <div class="actions"><button type="button" class="btn" data-act="prev">戻る</button></div>`;
+};
+function sheetData(){
+  const k=S.pick; const J=k?resolveJob(k):{};
+  const H=S.hard.map(h=>HARD.find(x=>x.id===h).label).join("／");
+  const {ok}=evaluate();
+  const ans=k?A3.map(q=>{const v=(S.q3[k]||{})[q.id];const o=q.o.find(x=>x[0]===v);return o?o[1]:"—"}).join("／"):"";
+  return [
+    ["始めたい理由",S.reasonFree||S.reason||"—"],
+    ["実現したいこと",S.purpose?`${PURPOSE.find(p=>p[0]===S.purpose)[1]}（${PURPOSE_LABEL[S.purpose]}）`:"—"],
+    ["譲れない条件",H||"—"],
+    ["残った候補",ok.map(r=>JOBS[r.key].name).join("、")||"—"],
+    ["3つの質問",ans?`今日動けるか・道筋・失うもの → ${ans}`:"—"],
+    ["まず試す1つ",J.name||"—"],
+    ["選んだ理由",S.why||"—"],
+    ["3ヶ月で確かめたいこと",S.verify||"—"],
+    ["控え",S.backup||"—"],
+    ["今日やる30分",S.todayFree||S.today||"—"],
+    ["始める日／振り返る日",`${S.start?addMonths(S.start,0):"—"} ／ ${S.start?addMonths(S.start,3):"—"}`]
+  ];
+}
+function sheet(){
+  return `<div class="sheet" aria-label="選択シート"><h3>あなたの選択シート</h3><dl>${sheetData().map(([a,b])=>`<dt>${esc(a)}</dt><dd>${esc(b)}</dd>`).join("")}</dl></div>`;
+}
+function sheetText(){
+  return "【副業スタイルナビ｜選択シート】\n"+sheetData().map(([a,b])=>`■${a}\n${b}`).join("\n")+"\n\n※3ヶ月後は「生活との相性」「仕事としての手応え」「続ける見込み」で振り返る";
+}
+
+function render(){
+  rail();
+  $("#main").innerHTML=`<section class="step">${views[S.step]()}</section>`;
+  save();
+}
+function go(n){S.step=Math.max(0,Math.min(STEPS.length-1,n));render();window.scrollTo({top:0,behavior:matchMedia("(prefers-reduced-motion: reduce)").matches?"auto":"smooth"})}
+function toast(m){const t=$("#toast");t.textContent=m;t.hidden=false;clearTimeout(toast._t);toast._t=setTimeout(()=>t.hidden=true,2200)}
+
+document.addEventListener("click",e=>{
+  const g=e.target.closest("[data-go]"); if(g){go(+g.dataset.go);return}
+  const b=e.target.closest("[data-act]"); if(!b) return;
+  const a=b.dataset.act;
+  if(a==="next") go(S.step+1);
+  if(a==="prev") go(S.step-1);
+  if(a==="copy"){const txt=sheetText();const done=()=>toast("コピーしました。メモアプリなどに貼り付けて保存してください");
+    try{navigator.clipboard.writeText(txt).then(done,()=>fallback(txt))}catch(err){fallback(txt)}}
+  if(a==="reset"){$("#confirmBox").innerHTML=`<div class="confirm">入力した内容をすべて消して、最初に戻ります。よろしいですか？<div class="actions"><button type="button" class="btn primary" data-act="resetYes">消して最初に戻る</button><button type="button" class="btn" data-act="resetNo">やめる</button></div></div>`}
+  if(a==="resetNo"){$("#confirmBox").innerHTML=""}
+  if(a==="resetYes"){S=blank();render();toast("最初に戻りました")}
+  if(a==="pickCustom"){if(!S.customName.trim()){toast("副業の名前を入力してください");return} S.pick="custom"; S.why=""; S.verify=""; S.backup=""; go(5)}
+  if(a==="exportBackup") exportBackup();
+  if(a==="importBackupClick") $("#backupFile").click();
+  if(a==="importYes"){if(pendingImport){S=pendingImport;pendingImport=null;$("#backupConfirm").innerHTML="";render();toast("バックアップを読み込みました")}}
+  if(a==="importNo"){pendingImport=null;$("#backupConfirm").innerHTML=""}
+  if(a==="backToList"){S.pick=""; go(4)}
+  if(a==="selectDay"){
+    const d=b.dataset.date;
+    S.journalSel=d;
+    const e=S.journal.find(x=>x.date===d);
+    S.journalDraft=e?e.text:"";
+    S.journalHours=e&&e.hours?String(e.hours):"";
+    S.journalIncome=e&&e.income?String(e.income):"";
+    render();
+  }
+  if(a==="calPrev"){S.calViewOffset--; render()}
+  if(a==="calNext"){S.calViewOffset++; render()}
+  if(a==="addJournal"){
+    const text=S.journalDraft.trim();
+    const hours=S.journalHours.trim();
+    const income=S.journalIncome.trim();
+    if(!text&&!hours&&!income){toast("一言か、時間・収入のどちらかを入力してください");return}
+    const iso=S.journalSel||todayISO();
+    const entry={date:iso,text,hours,income};
+    const i=S.journal.findIndex(e=>e.date===iso);
+    if(i>=0) S.journal[i]=entry; else S.journal.push(entry);
+    render();
+    toast("記録しました");
+  }
+  if(a==="deleteJournal"){
+    const iso=S.journalSel||todayISO();
+    S.journal=S.journal.filter(e=>e.date!==iso);
+    S.journalDraft=""; S.journalHours=""; S.journalIncome="";
+    render();
+    toast("削除しました");
+  }
+});
+function fallback(txt){
+  const box=$("#confirmBox");box.innerHTML=`<div class="field"><label for="copyArea">下の文章を選択した状態にしてあります。コピーされていなければ、そのままコピーしてください</label><textarea id="copyArea" rows="10">${esc(txt)}</textarea></div>`;
+  const ta=$("#copyArea");ta.focus();ta.select();
+  try{if(document.execCommand("copy")) toast("コピーしました。メモアプリなどに貼り付けて保存してください")}catch(err){}
+}
+function exportBackup(){
+  const blob=new Blob([JSON.stringify(S)],{type:"application/json"});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement("a");
+  const d=new Date();
+  a.href=url;
+  a.download=`副業スタイルナビ_バックアップ_${d.getFullYear()}${pad2(d.getMonth()+1)}${pad2(d.getDate())}.json`;
+  document.body.appendChild(a); a.click(); a.remove();
+  URL.revokeObjectURL(url);
+  toast("バックアップを保存しました。ファイルをなくさない場所に置いてください");
+}
+let pendingImport=null;
+function readBackupFile(file){
+  if(!file) return;
+  const reader=new FileReader();
+  reader.onload=()=>{
+    try{
+      const data=JSON.parse(reader.result);
+      pendingImport=Object.assign(blank(),data);
+      $("#backupConfirm").innerHTML=`<div class="confirm">今の入力を、読み込んだバックアップの内容で上書きします。よろしいですか？<div class="actions"><button type="button" class="btn primary" data-act="importYes">上書きして読み込む</button><button type="button" class="btn" data-act="importNo">やめる</button></div></div>`;
+    }catch(err){
+      pendingImport=null;
+      toast("読み込めませんでした。バックアップファイルを確認してください");
+    }
+  };
+  reader.onerror=()=>toast("読み込めませんでした。バックアップファイルを確認してください");
+  reader.readAsText(file);
+}
+document.addEventListener("change",e=>{
+  const el=e.target;
+  if(el.id==="backupFile"){readBackupFile(el.files[0]); el.value=""; return}
+  const n=el.name;
+  if(el.dataset.bind){S[el.dataset.bind]=el.value; if(el.dataset.bind==="start") render(); else save(); return}
+  if(!n) return;
+  if(n==="feel"||n==="hard"){const arr=new Set(S[n]); el.checked?arr.add(el.value):arr.delete(el.value); S[n]=[...arr]; if(n==="hard"){S.q3={};S.pick=""} render(); return}
+  if(n==="reason"){S.reason=el.value; save(); return}
+  if(n==="purpose"){S.purpose=el.value; S.q3={}; S.pick=""; render(); return}
+  if(n==="pick"){S.pick=el.value; autoFill(true); render(); return}
+  if(n==="today"){S.today=el.value; S.todayFree=""; render(); return}
+  if(n.startsWith("q3_")){const [,k,q]=n.split("_"); S.q3[k]=Object.assign({},S.q3[k],{[q]:el.value}); if(k!=="custom") S.pick=""; render(); return}
+  const q=Q.find(x=>x.id===n);
+  if(q){ if(q.multi){const arr=new Set(S.a[n]||[]); el.checked?arr.add(el.value):arr.delete(el.value); if(el.value==="k_none"&&el.checked){arr.clear();arr.add("k_none")} else if(el.checked) arr.delete("k_none"); S.a[n]=[...arr]} else S.a[n]=el.value; S.q3={}; S.pick=""; render(); }
+});
+document.addEventListener("input",e=>{const el=e.target; if(el.dataset.bind && el.dataset.bind!=="start"){S[el.dataset.bind]=el.value; save(); if(S.step===6){const sh=document.querySelector(".sheet"); if(sh) sh.outerHTML=sheet()}}});
+render();
+})();
+</script>
+
+</body>
+</html>
