@@ -824,9 +824,10 @@ const PASSPHRASE="間違っていない";
 function gateUnlocked(){try{return localStorage.getItem(GATE_KEY)==="1"}catch(e){return false}}
 function unlockGate(){try{localStorage.setItem(GATE_KEY,"1")}catch(e){}}
 function showApp(){$("#gate").hidden=true; $(".wrap").hidden=false; render();}
+function normalizePass(s){return String(s).replace(/[「」『』\s]/g,"")}
 function tryUnlock(){
   const v=($("#gateInput").value||"").trim();
-  if(v && v===PASSPHRASE){unlockGate(); showApp()}
+  if(v && normalizePass(v)===normalizePass(PASSPHRASE)){unlockGate(); showApp()}
   else{$("#gateMsg").hidden=false}
 }
 if(gateUnlocked()){
