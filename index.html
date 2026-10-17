@@ -346,7 +346,7 @@ const HARD=[
   {id:"h_theme",label:"好きなテーマで続けたい"}
 ];
 
-const blank=()=>({step:0,feel:[],reason:"",reasonFree:"",purpose:"",a:{},hard:[],q3:{},pick:"",customName:"",why:"",verify:"",backup:"",today:"",todayFree:"",start:new Date().toISOString().slice(0,10),journal:[],journalDraft:"",journalHours:"",journalIncome:"",journalSel:"",calViewOffset:0});
+const blank=()=>({step:0,feel:[],reason:"",reasonFree:"",purpose:"",a:{},hard:[],q3:{},pick:"",customName:"",why:"",verify:"",backup:"",today:"",todayFree:"",start:new Date().toISOString().slice(0,10),journal:[],journalDraft:"",journalHours:"",journalIncome:"",journalSel:"",calViewOffset:0,reviewLife:"",reviewWork:"",reviewKeep:"",reviewNote:"",reviewDecision:""});
 let S=load()||blank();
 function load(){try{const v=localStorage.getItem(KEY);return v?Object.assign(blank(),JSON.parse(v)):null}catch(e){return null}}
 function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
@@ -536,6 +536,7 @@ function autoFill(force){
   if(force) S.today="";
 }
 function addMonths(iso,n){const d=new Date(iso+"T00:00:00");if(isNaN(d))return "";const m=d.getMonth()+n;d.setMonth(m);return `${d.getFullYear()}年${d.getMonth()+1}月${d.getDate()}日`}
+function addMonthsISO(iso,n){const d=new Date(iso+"T00:00:00");if(isNaN(d))return "";const m=d.getMonth()+n;d.setMonth(m);return `${d.getFullYear()}-${pad2(d.getMonth()+1)}-${pad2(d.getDate())}`}
 function months(J){
   const kind=J.kind, nm=J.name, asset=(kind==="grow"||kind==="goods");
   const m1={
@@ -606,6 +607,23 @@ function trackSummary(){
   </div>
   <p class="note">収入は経費や税金を引く前の金額です。</p>`;
 }
+function reviewBlock(){
+  const opts=[["good","良い"],["mid","まあまあ"],["bad","厳しい"]];
+  const decisionOpts=[["keep","続ける"],["change","やり方を変える"],["switch","控えに切り替える"]];
+  return `<div class="sheet" aria-label="3ヶ月の振り返り">
+    <h3>3ヶ月の振り返り（${esc(addMonths(S.start,3))}）</h3>
+    <p class="note">「生活との相性」「仕事としての手応え」「続ける見込み」の3つから、これからどうするかを考えてみましょう。正解はありません。</p>
+    <div class="q"><span class="label">生活との相性は？</span>${chips("reviewLife",opts,false,S.reviewLife)}</div>
+    <div class="q"><span class="label">仕事としての手応えは？</span>${chips("reviewWork",opts,false,S.reviewWork)}</div>
+    <div class="q"><span class="label">続けられる見込みは？</span>${chips("reviewKeep",opts,false,S.reviewKeep)}</div>
+    <div class="field"><label for="reviewNote">振り返りメモ（任意）</label><textarea id="reviewNote" data-bind="reviewNote" placeholder="例：収入はまだ小さいが、作業は苦じゃなかった">${esc(S.reviewNote)}</textarea></div>
+    <div class="q"><span class="label">これからどうする？</span>${chips("reviewDecision",decisionOpts,false,S.reviewDecision)}</div>
+    ${S.reviewDecision==="switch"?`<div class="say with-icon">${mascot()}<div class="txt"><b>F!NDより</b>控え「${esc(S.backup||"なし")}」に切り替えて、もう一度3つの質問から選び直しましょう。</div></div>
+      <div class="actions"><button type="button" class="btn primary" data-act="switchBackup">控えに切り替えて選び直す</button></div>`
+    :S.reviewDecision?`<div class="actions"><button type="button" class="btn primary" data-act="restartCycle">記録して、次の3ヶ月をスタートする</button>${S.reviewDecision==="change"?`<button type="button" class="btn ghost" data-act="goStep7">STEP7で今日の30分を見直す</button>`:""}</div>`
+    :""}
+  </div>`;
+}
 views[7]=()=>{
   const k=S.pick; if(!k) return `<p class="note">STEP6・STEP7で「まず試す1つ」と今日やることを決めてから、ここに来てください。</p>${nav(true)}`;
   if(!S.journalSel) S.journalSel=todayISO();
@@ -613,8 +631,11 @@ views[7]=()=>{
   const story=STORIES[dayOfYear()%STORIES.length];
   const selDate=S.journalSel;
   const selEntry=S.journal.find(e=>e.date===selDate);
+  const reviewDate=S.start?addMonthsISO(S.start,3):"";
+  const reviewReached=reviewDate&&todayISO()>=reviewDate;
   return `<div class="kicker">STEP 8</div><h2>3ヶ月サポート</h2>
   <div class="finish">${mascot()}<div class="bubble"><b>ここからは3ヶ月の伴走です</b>「${esc(J.name)}」を試しているあなたへ、毎日この1ページを覗いてみてください。今日の一言を記録して、F!NDメンバーの失敗談を1つ読む。それだけで大丈夫です。</div></div>
+  ${reviewReached?reviewBlock():""}
   <h3>一言日記と、収入・時間の記録</h3>
   <p class="note">カレンダーの日付を選ぶと、その日の記録を書けます。あとから選び直して編集もできます。</p>
   ${calendarHTML()}
@@ -678,6 +699,21 @@ document.addEventListener("click",e=>{
   if(a==="resetNo"){$("#confirmBox").innerHTML=""}
   if(a==="resetYes"){S=blank();render();toast("最初に戻りました")}
   if(a==="pickCustom"){if(!S.customName.trim()){toast("副業の名前を入力してください");return} S.pick="custom"; S.why=""; S.verify=""; S.backup=""; go(5)}
+  if(a==="switchBackup"){
+    const bkKey=Object.keys(JOBS).find(x=>JOBS[x].name===S.backup);
+    S.pick=bkKey||""; S.why=""; S.verify=""; S.backup=""; S.q3={};
+    S.start=todayISO();
+    S.reviewLife=""; S.reviewWork=""; S.reviewKeep=""; S.reviewNote=""; S.reviewDecision="";
+    toast(bkKey?"控えに切り替えました。3つの質問に答えてください":"控えが見つからなかったので、候補を選び直してください");
+    go(bkKey?5:4);
+  }
+  if(a==="restartCycle"){
+    S.start=todayISO();
+    S.reviewLife=""; S.reviewWork=""; S.reviewKeep=""; S.reviewNote=""; S.reviewDecision="";
+    render();
+    toast("次の3ヶ月をスタートしました");
+  }
+  if(a==="goStep7"){go(6)}
   if(a==="exportBackup") exportBackup();
   if(a==="importBackupClick") $("#backupFile").click();
   if(a==="importYes"){if(pendingImport){S=pendingImport;pendingImport=null;$("#backupConfirm").innerHTML="";render();toast("バックアップを読み込みました")}}
@@ -757,6 +793,7 @@ document.addEventListener("change",e=>{
   if(n==="reason"){S.reason=el.value; save(); return}
   if(n==="purpose"){S.purpose=el.value; S.q3={}; S.pick=""; render(); return}
   if(n==="pick"){S.pick=el.value; autoFill(true); render(); return}
+  if(n==="reviewLife"||n==="reviewWork"||n==="reviewKeep"||n==="reviewDecision"){S[n]=el.value; render(); return}
   if(n==="today"){S.today=el.value; S.todayFree=""; render(); return}
   if(n.startsWith("q3_")){const [,k,q]=n.split("_"); S.q3[k]=Object.assign({},S.q3[k],{[q]:el.value}); if(k!=="custom") S.pick=""; render(); return}
   const q=Q.find(x=>x.id===n);
