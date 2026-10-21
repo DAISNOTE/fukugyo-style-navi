@@ -71,6 +71,11 @@ p.note{color:var(--sub);margin:0 0 16px;max-width:62ch}
 .chip span:hover{border-color:var(--accent)}
 .chip input:checked + span{border-color:var(--accent);background:var(--accent);color:var(--accent-ink);font-weight:700;box-shadow:var(--shadow-md);transform:translateY(-1px)}
 .chip input:focus-visible + span{outline:2px solid var(--accent);outline-offset:2px}
+.chip-btn{display:inline-flex;align-items:center;gap:6px;padding:10px 16px;border:1.5px solid var(--line);border-radius:999px;background:var(--surface);color:var(--ink);font:inherit;font-size:15px;line-height:1.4;cursor:pointer;box-shadow:var(--shadow-sm);transition:border-color .15s,background .15s,box-shadow .15s,transform .15s}
+.chip-btn:hover:not(:disabled){border-color:var(--accent)}
+.chip-btn.on{border-color:var(--accent);background:var(--accent);color:var(--accent-ink);font-weight:700;box-shadow:var(--shadow-md);transform:translateY(-1px)}
+.chip-btn.on .pill{background:rgba(255,255,255,.3);color:inherit}
+.chip-btn:disabled{opacity:.5;cursor:not-allowed}
 textarea,input[type="text"],input[type="date"],select{width:100%;font:inherit;color:var(--ink);background:var(--surface);border:1.5px solid var(--line);border-radius:calc(var(--r) - 4px);padding:11px 13px;box-shadow:var(--shadow-sm)}
 textarea{min-height:76px;resize:vertical}
 textarea:focus,input:focus,select:focus{outline:2px solid var(--accent);outline-offset:1px;border-color:var(--accent)}
@@ -205,7 +210,7 @@ footer.fine{color:var(--sub);font-size:13px;margin-top:44px;border-top:1px solid
 "use strict";
 const KEY="find-hajime-navi-v1";
 const STEPS=[
-  {t:"いまの気持ち"},{t:"始めたい理由"},{t:"自分の条件"},{t:"譲れない条件"},{t:"候補を見る"},{t:"1つに決める"},{t:"今日と3ヶ月"},{t:"3ヶ月サポート"}
+  {t:"いまの気持ち"},{t:"始めたい理由"},{t:"自分の条件"},{t:"譲れない条件"},{t:"候補を挙げる"},{t:"1つに決める"},{t:"今日と3ヶ月"},{t:"3ヶ月サポート"}
 ];
 const JOBS={
   writer:{name:"Webライター",kind:"skill",path:"クラウドワークスやランサーズで「初心者OK」の案件に応募できる。周りに副業のことを話してみる",remain:"文章力、構成力、実績",
@@ -228,9 +233,11 @@ const JOBS={
     today:["人に教えられること、代わりにできることを10個書き出す","その中で「頼まれたことがあるもの」に印をつける","ココナラで似たサービスを5つ見て、価格と内容を調べる"]}
 };
 const ORDER=["writer","video","design","blog","goods","skill"];
+function findCandidate(k){return S.shortlist.find(c=>c.key===k)}
 function resolveJob(k){
-  if(k==="custom"){
-    const nm=S.customName||"自分で決めた副業";
+  const cand=findCandidate(k);
+  if(cand&&cand.type==="custom"){
+    const nm=cand.name||"自分で決めた副業";
     return {name:nm,kind:"skill",
       path:"あなたが考えている、依頼してくれる相手や売り先",
       remain:"経験・実績",
@@ -347,7 +354,7 @@ const HARD=[
   {id:"h_theme",label:"好きなテーマで続けたい"}
 ];
 
-const blank=()=>({step:0,feel:[],reason:"",reasonFree:"",purpose:"",a:{},hard:[],q3:{},pick:"",customName:"",why:"",verify:"",backup:"",today:"",todayFree:"",start:new Date().toISOString().slice(0,10),journal:[],journalDraft:"",journalHours:"",journalIncome:"",journalSel:"",calViewOffset:0,reviewLife:"",reviewWork:"",reviewKeep:"",reviewNote:"",reviewDecision:""});
+const blank=()=>({step:0,feel:[],reason:"",reasonFree:"",purpose:"",a:{},hard:[],shortlist:[],candidateFree:"",q3:{},pick:"",why:"",verify:"",backup:"",today:"",todayFree:"",start:new Date().toISOString().slice(0,10),journal:[],journalDraft:"",journalHours:"",journalIncome:"",journalSel:"",calViewOffset:0,reviewLife:"",reviewWork:"",reviewKeep:"",reviewNote:"",reviewDecision:""});
 let S=load()||blank();
 function load(){try{const v=localStorage.getItem(KEY);return v?Object.assign(blank(),JSON.parse(v)):null}catch(e){return null}}
 function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
@@ -396,7 +403,7 @@ function evaluate(){
   const list=ORDER.map(k=>res[k]);
   const ok=list.filter(r=>!r.out.length).sort((a,b)=>b.score-a.score);
   const ng=list.filter(r=>r.out.length);
-  return {ok,ng};
+  return {ok,ng,all:list};
 }
 function timeTypeNote(){
   return (has("speed","s1")&&has("fatigue","f3"))||(S.hard.includes("h_fast")&&has("fatigue","f3"));
@@ -454,23 +461,47 @@ views[3]=()=>{
   ${nav(true,"候補を見る",n===0,n===0?"1つ以上選ぶと進めます":"")}`;
 };
 views[4]=()=>{
-  const {ok,ng}=evaluate();
-  const top=ok.slice(0,3).map(r=>r.key);
-  const typePill=k=>purposeType(k)==="asset"?'<span class="pill asset">媒体や商品を育てる</span>':'<span class="pill gig">スキルを使って稼ぐ</span>';
-  const card=(r,i)=>`<div class="cand ${r.out.length?"out":""}"><h4>${esc(JOBS[r.key].name)} ${typePill(r.key)}${r.out.length?'<span class="pill out">外れる</span>':(i===0?'<span class="pill top">条件に一番近い</span>':'<span class="pill ok">残る</span>')}</h4>
-    <ul>${r.out.map(m=>`<li class="x">${esc(m)}</li>`).join("")}${r.plus.map(m=>`<li class="p">${esc(m)}</li>`).join("")}${r.caut.map(m=>`<li class="c">注意：${esc(m)}</li>`).join("")}</ul>
-    ${r.out.length?"":`<div class="meta">続けた先に残るもの：${esc(JOBS[r.key].remain)}</div>`}</div>`;
-  const purposeNote=S.purpose?`<div class="say with-icon">${mascot()}<div class="txt"><b>あなたが実現したいこと</b>「${esc(PURPOSE.find(p=>p[0]===S.purpose)[1])}」と答えました。${S.purpose==="asset"?"なので、時間をかけて育てる「媒体や商品を育てる」（ブログ・アフィリエイト・物販）タイプを優先して見ていきましょう。":S.purpose==="gig"?"なので、仕事を受けてすぐ収入につながる「スキルを使って稼ぐ」タイプを優先して見ていきましょう。":"両方に関心があるとのことなので、まずはどちらか1つで「本当に目的に合っているか」を確かめることを優先します。候補はその判断材料として並べています。"}</div></div>`:`<div class="say with-icon">${mascot()}<div class="txt"><b>目的を選んでいません</b>STEP2で「副業で何を実現したいか」を選ぶと、「スキルを使って稼ぐ」「媒体や商品を育てる」のどちらを優先するといいか、ここに表示されます。戻って選び直すこともできます。</div></div>`;
-  return `<div class="kicker">STEP 5</div><h2>条件でふるいにかけた結果</h2>
-  <p class="note">譲れない条件に合わないものを外し、残ったものを「できれば満たしたい条件」に多く当てはまる順に並べました。並び順は目安です。ランキングではありません。</p>
-  ${purposeNote}
+  const {all}=evaluate();
+  const chosen=new Set(S.shortlist.map(c=>c.key));
+  const presetChips=ORDER.map(k=>{
+    const r=all.find(x=>x.key===k);
+    const on=chosen.has(k);
+    const full=!on&&S.shortlist.length>=3;
+    return `<button type="button" class="chip-btn${on?" on":""}" data-act="toggleCandidate" data-key="${k}" ${full?"disabled":""}>${esc(JOBS[k].name)}${r.out.length?' <span class="pill out">条件と合わないかも</span>':""}</button>`;
+  }).join("");
+  const cardFor=item=>{
+    if(item.type==="preset"){
+      const r=all.find(x=>x.key===item.key);
+      const typePill=purposeType(item.key)==="asset"?'<span class="pill asset">媒体や商品を育てる</span>':'<span class="pill gig">スキルを使って稼ぐ</span>';
+      return `<div class="cand"><h4>${esc(JOBS[item.key].name)} ${typePill}</h4>
+        <ul>${r.out.map(m=>`<li class="x">${esc(m)}</li>`).join("")}${r.plus.map(m=>`<li class="p">${esc(m)}</li>`).join("")}${r.caut.map(m=>`<li class="c">注意：${esc(m)}</li>`).join("")}</ul>
+        <div class="meta">続けた先に残るもの：${esc(JOBS[item.key].remain)}</div>
+        <div class="actions"><button type="button" class="btn ghost" data-act="removeCandidate" data-key="${item.key}">この候補を外す</button></div></div>`;
+    }
+    const H=S.hard.map(h=>HARD.find(x=>x.id===h).label);
+    return `<div class="cand"><h4>${esc(item.name)}</h4>
+      <p class="note">自分で考えた候補なので、譲れない条件に自分で当てはめて確認してください${H.length?"："+H.map(h=>`「${esc(h)}」`).join("、"):"（STEP4で選んだ条件がありません）"}</p>
+      <div class="actions"><button type="button" class="btn ghost" data-act="removeCandidate" data-key="${item.key}">この候補を外す</button></div></div>`;
+  };
+  const canAdd=S.shortlist.length<3;
+  return `<div class="kicker">STEP 5</div><h2>気になる副業を、3つまで挙げてみる</h2>
+  <p class="note">いきなり一番いい1つを探さなくて大丈夫です。思い浮かばないときは、次の3つの角度から考えてみてください。</p>
+  <div class="say with-icon">${mascot()}<div class="txt"><b>候補の挙げ方</b>
+  ①STEP3・STEP4で書き出した条件から考える（例：人とのやり取りを減らしたいなら、ブログや物販が合いやすい）<br>
+  ②今あるものから考える（持っているスキル・経験・使っていないもの）<br>
+  ③周りからの頼まれごとから考える（人によく頼まれること、聞かれること）</div></div>
+  ${S.purpose?`<div class="say with-icon">${mascot()}<div class="txt"><b>あなたが実現したいこと</b>「${esc(PURPOSE.find(p=>p[0]===S.purpose)[1])}」と答えました。${S.purpose==="asset"?"なので「媒体や商品を育てる」（ブログ・アフィリエイト・物販）タイプの例から考えると選びやすいかもしれません。":S.purpose==="gig"?"なので「スキルを使って稼ぐ」（Webライター・動画編集・Webデザイン・スキル販売）タイプの例から考えると選びやすいかもしれません。":"両方に関心があるとのことなので、まずは1〜2個候補を挙げて、どちらが自分に合うかを確かめることを優先しましょう。"}</div></div>`:""}
   ${timeTypeNote()?`<div class="say"><b>F!NDより</b>「とにかく早く現金が欲しい」「本業でほとんど余力が残らない」に強く寄っているなら、働いた時間がそのまま収入になるアルバイトなどの方が合っているかもしれません。それも立派な選択です。</div>`:""}
-  ${ok.length?`<h3>残った候補（${ok.length}つ）</h3><div class="cands">${ok.map(card).join("")}</div>`:`<div class="say with-icon">${mascot()}<div class="txt"><b>候補が残りませんでした</b>譲れない条件を1つ外すか、このツールで扱っていない副業（アルバイトや地域の仕事など）にも目を向けてみてください。どちらも立派な選択です。</div></div>`}
-  ${ng.length?`<h3>外れた候補</h3><div class="cands">${ng.map(card).join("")}</div>`:""}
-  <div class="say with-icon">${mascot()}<div class="txt"><b>リストにない副業を考えている方へ</b>この6つに当てはまらなくても構いません。すでに試したい副業が決まっているなら、名前を書いて進めてください。</div></div>
-  <div class="field"><label for="customName">試したい副業の名前</label><input type="text" id="customName" data-bind="customName" value="${esc(S.customName)}" placeholder="例：ハンドメイドアクセサリー販売"></div>
-  <div class="actions"><button type="button" class="btn" data-act="pickCustom">この副業で進める</button></div>
-  ${nav(true,ok.length?`上位${Math.min(3,ok.length)}つで、最後の1つを決める`:"",!ok.length)}`;
+  <h3>例から選ぶ</h3>
+  <p class="note">記事で紹介している6つの例です。気になるものを選ぶと、下に候補として追加されます。</p>
+  <div class="chips">${presetChips}</div>
+  <h3>自分で書く</h3>
+  <p class="note">この6つに当てはまらなくても構いません。思いついたものを自由に書いてください。</p>
+  <div class="field"><label for="candidateFree">副業の名前</label><input type="text" id="candidateFree" data-bind="candidateFree" value="${esc(S.candidateFree)}" placeholder="例：ハンドメイドアクセサリー販売" ${canAdd?"":"disabled"}></div>
+  <div class="actions"><button type="button" class="btn" data-act="addCandidateCustom" ${canAdd?"":"disabled"}>候補に追加する</button></div>
+  <h3>あなたの候補（${S.shortlist.length}/3）</h3>
+  ${S.shortlist.length?`<div class="cands">${S.shortlist.map(cardFor).join("")}</div>`:`<div class="say with-icon">${mascot()}<div class="txt"><b>まだ候補がありません</b>上の例から選ぶか、自分で書いて1つ以上追加してください。</div></div>`}
+  ${nav(true,"最後の1つを決める",S.shortlist.length===0)}`;
 };
 const A3=[
   {id:"today",l:"今日、30分でできる最初の一歩が思い浮かび、やる自分を想像しても気が重くならない？",h:"大きな目標でなく、「登録する」「1件調べる」のような今日すぐできる具体的な行動が思い浮かぶか、という質問です。",o:[["y","はい"],["m","少し重い"],["n","いいえ"]]},
@@ -485,55 +516,40 @@ function verdict(k){
   return {cls:yes===3?"good":"mid",t:yes===3?"3つとも「はい」。まず試す候補です":`「はい」は${yes}つ`+(a.path==="m"?"。道筋を確かめることを、3ヶ月の最優先にします":""),yes};
 }
 views[5]=()=>{
-  if(S.pick==="custom"){
-    const k="custom"; const v=verdict(k); const name=S.customName||"（名前未入力）";
-    if(v&&v.yes>=0){
-      const J=resolveJob(k);
-      if(!S.why) S.why=`${name}を試す`;
-      if(!S.verify) S.verify=(((S.q3[k]||{}).path==="m")?"最初の仕事（売る場所）への道筋が見つかるか。そのうえで、":"")+J.verify;
-    }
-    return `<div class="kicker">STEP 6</div><h2>最後の1つは、3つの質問で決める</h2>
-    <p class="note">「${esc(name)}」について、3つの質問に答えてください。2つめの「道筋」だけは特に大事です。</p>
-    <div class="qgrid"><div class="qcard"><h4>${esc(name)}</h4>
-      ${A3.map(q=>`<div class="qrow"><div class="ql">${q.l}</div>${q.h?`<div class="qh">${esc(q.h)}</div>`:""}${chips("q3_"+k+"_"+q.id,q.o,false,(S.q3[k]||{})[q.id])}</div>`).join("")}
-      ${v?`<div class="verdict ${v.cls}">${esc(v.t)}</div>`:""}</div></div>
-    ${v&&v.yes>=0?`<div class="field"><label for="why">選んだ理由（1文）</label><div class="hint">自分の言葉で説明できれば、あなたが選んだ副業です。</div><textarea id="why" data-bind="why">${esc(S.why)}</textarea></div>
-      <div class="field"><label for="verify">3ヶ月で確かめたいこと（1文）</label><textarea id="verify" data-bind="verify">${esc(S.verify)}</textarea></div>
-      <div class="field"><label for="backup">控え（決まっていれば）</label><input type="text" id="backup" data-bind="backup" value="${esc(S.backup)}"></div>`
-    :v&&v.yes<0?`<div class="say"><b>いったん立ち止まりましょう</b>道筋がまったく見えない状態だと、3ヶ月続けるのは難しいかもしれません。誰に・どこで届けるかを先に考えてみてください。</div>`
-    :`<p class="note" style="margin-top:16px">3つの質問に答えると、次に進めます。</p>`}
-    <div class="actions"><button type="button" class="btn" data-act="prev">戻る</button><button type="button" class="btn ghost" data-act="backToList">候補リストから選び直す</button>${v&&v.yes>=0?`<button type="button" class="btn primary" data-act="next">今日と3ヶ月の計画へ</button>`:""}</div>`;
-  }
-  const {ok}=evaluate(); const top=ok.slice(0,3).map(r=>r.key);
-  const scored=top.map(k=>({k,v:verdict(k)})).filter(x=>x.v&&x.v.yes>=0).sort((a,b)=>b.v.yes-a.v.yes);
-  const allAnswered=top.every(k=>verdict(k));
-  const best=scored[0]?.k||"";
+  if(!S.shortlist.length) return `<p class="note">STEP5で、候補を1つ以上挙げてください。</p>${nav(true)}`;
+  const nameOf=k=>{const it=findCandidate(k); return it.type==="preset"?JOBS[k].name:it.name};
+  const typePillOf=k=>{const it=findCandidate(k); return it.type==="preset"?(purposeType(k)==="asset"?'<span class="pill asset">媒体や商品を育てる</span>':'<span class="pill gig">スキルを使って稼ぐ</span>'):""};
+  const scored=S.shortlist.map(item=>({item,v:verdict(item.key)}));
+  const allAnswered=scored.every(x=>x.v);
+  const valid=scored.filter(x=>x.v&&x.v.yes>=0).sort((a,b)=>b.v.yes-a.v.yes).map(x=>x.item.key);
+  const best=valid[0]||"";
   if(allAnswered&&!S.pick&&best){S.pick=best; autoFill(true)}
-  const valid=scored.map(x=>x.k);
   return `<div class="kicker">STEP 6</div><h2>最後の1つは、3つの質問で決める</h2>
   <p class="note">条件の数ではなく、「今日動けるか」で決めます。2つめの「道筋」だけは特に大事です。生活に合っていても、頼んでくれる相手や売る場所がなければ収入にはならないからです。</p>
-  <div class="qgrid">${top.map(k=>{const v=verdict(k);return `<div class="qcard"><h4>${esc(JOBS[k].name)} ${purposeType(k)==="asset"?'<span class="pill asset">媒体や商品を育てる</span>':'<span class="pill gig">スキルを使って稼ぐ</span>'}</h4>
-    ${A3.map(q=>`<div class="qrow"><div class="ql">${q.l}</div>${q.h?`<div class="qh">${esc(q.h)}</div>`:""}${q.id==="path"?`<div class="qh">道筋の例：${esc(JOBS[k].path)}</div>`:""}${chips("q3_"+k+"_"+q.id,q.o,false,(S.q3[k]||{})[q.id])}</div>`).join("")}
+  <div class="qgrid">${S.shortlist.map(item=>{const k=item.key; const v=verdict(k); const pathHint=item.type==="preset"?`<div class="qh">道筋の例：${esc(JOBS[k].path)}</div>`:"";
+    return `<div class="qcard"><h4>${esc(nameOf(k))} ${typePillOf(k)}</h4>
+    ${A3.map(q=>`<div class="qrow"><div class="ql">${q.l}</div>${q.h?`<div class="qh">${esc(q.h)}</div>`:""}${q.id==="path"?pathHint:""}${chips("q3_"+k+"_"+q.id,q.o,false,(S.q3[k]||{})[q.id])}</div>`).join("")}
     ${v?`<div class="verdict ${v.cls}">${esc(v.t)}</div>`:""}</div>`}).join("")}</div>
   ${allAnswered?(valid.length?`<h3>まず試す1つ</h3>
-    ${chips("pick",valid.map(k=>[k,JOBS[k].name+(k===best?"（質問の答えが一番いい）":"")]),false,S.pick)}
+    ${chips("pick",valid.map(k=>[k,nameOf(k)+(k===best?"（質問の答えが一番いい）":"")]),false,S.pick)}
     <div class="field"><label for="why">選んだ理由（1文）</label><div class="hint">自分の言葉で説明できれば、おすすめに流された選択ではなく、あなたが選んだ副業です。</div><textarea id="why" data-bind="why">${esc(S.why)}</textarea></div>
     <div class="field"><label for="verify">3ヶ月で確かめたいこと（1文）</label><textarea id="verify" data-bind="verify">${esc(S.verify)}</textarea></div>
     <div class="field"><label for="backup">控え（選ばなかった候補）</label><input type="text" id="backup" data-bind="backup" value="${esc(S.backup)}"></div>
-    `:`<div class="say"><b>残る候補がありません</b>道筋が見えない候補だけが残りました。STEP4に戻って条件を見直すか、道筋が見えそうな候補を探してみてください。</div>`):`<p class="note" style="margin-top:16px">すべての質問に答えると、まず試す1つを選べます。</p>`}
+    `:`<div class="say"><b>残る候補がありません</b>道筋が見えない候補だけが残りました。STEP5に戻って候補を見直してください。</div>`):`<p class="note" style="margin-top:16px">すべての質問に答えると、まず試す1つを選べます。</p>`}
   ${nav(true,"今日と3ヶ月の計画へ",!(allAnswered&&S.pick))}`;
 };
 function autoFill(force){
   const k=S.pick; if(!k) return;
+  const J=resolveJob(k);
   const H=S.hard.map(h=>HARD.find(x=>x.id===h).label);
-  const r=evaluate().ok.find(x=>x.key===k);
+  const r=evaluate().all.find(x=>x.key===k);
   const pt=(r&&r.plus.length)?r.plus[0]:"";
   const cond=H.length?H.slice(0,2).map(h=>`「${h}」`).join("")+"という条件に合い、":"";
-  if(force||!S.why) S.why=`${cond}${pt?pt+"ので、":""}${JOBS[k].name}を試す`;
+  if(force||!S.why) S.why=`${cond}${pt?pt+"ので、":""}${J.name}を試す`;
   const a=S.q3[k]||{};
-  if(force||!S.verify) S.verify=(a.path==="m"?"最初の仕事（売る場所）への道筋が見つかるか。そのうえで、":"")+JOBS[k].verify;
-  const {ok}=evaluate(); const other=ok.map(x=>x.key).filter(x=>x!==k && (verdict(x)?.yes??0)>=0);
-  if(force||!S.backup) S.backup=other.length?JOBS[other[0]].name:"なし";
+  if(force||!S.verify) S.verify=(a.path==="m"?"最初の仕事（売る場所）への道筋が見つかるか。そのうえで、":"")+J.verify;
+  const other=S.shortlist.map(c=>c.key).filter(x=>x!==k && (verdict(x)?.yes??0)>=0);
+  if(force||!S.backup) S.backup=other.length?resolveJob(other[0]).name:"なし";
   if(force) S.today="";
 }
 function addMonths(iso,n){const d=new Date(iso+"T00:00:00");if(isNaN(d))return "";const m=d.getMonth()+n;d.setMonth(m);return `${d.getFullYear()}年${d.getMonth()+1}月${d.getDate()}日`}
@@ -657,13 +673,12 @@ views[7]=()=>{
 function sheetData(){
   const k=S.pick; const J=k?resolveJob(k):{};
   const H=S.hard.map(h=>HARD.find(x=>x.id===h).label).join("／");
-  const {ok}=evaluate();
   const ans=k?A3.map(q=>{const v=(S.q3[k]||{})[q.id];const o=q.o.find(x=>x[0]===v);return o?o[1]:"—"}).join("／"):"";
   return [
     ["始めたい理由",S.reasonFree||S.reason||"—"],
     ["実現したいこと",S.purpose?`${PURPOSE.find(p=>p[0]===S.purpose)[1]}（${PURPOSE_LABEL[S.purpose]}）`:"—"],
     ["譲れない条件",H||"—"],
-    ["残った候補",ok.map(r=>JOBS[r.key].name).join("、")||"—"],
+    ["あなたが挙げた候補",S.shortlist.map(c=>c.type==="preset"?JOBS[c.key].name:c.name).join("、")||"—"],
     ["3つの質問",ans?`今日動けるか・道筋・失うもの → ${ans}`:"—"],
     ["まず試す1つ",J.name||"—"],
     ["選んだ理由",S.why||"—"],
@@ -699,10 +714,31 @@ document.addEventListener("click",e=>{
   if(a==="reset"){$("#confirmBox").innerHTML=`<div class="confirm">入力した内容をすべて消して、最初に戻ります。よろしいですか？<div class="actions"><button type="button" class="btn primary" data-act="resetYes">消して最初に戻る</button><button type="button" class="btn" data-act="resetNo">やめる</button></div></div>`}
   if(a==="resetNo"){$("#confirmBox").innerHTML=""}
   if(a==="resetYes"){S=blank();render();toast("最初に戻りました")}
-  if(a==="pickCustom"){if(!S.customName.trim()){toast("副業の名前を入力してください");return} S.pick="custom"; S.why=""; S.verify=""; S.backup=""; go(5)}
+  if(a==="toggleCandidate"){
+    const k=b.dataset.key;
+    const idx=S.shortlist.findIndex(c=>c.key===k);
+    if(idx>=0){ S.shortlist.splice(idx,1); if(S.pick===k) S.pick="" }
+    else { if(S.shortlist.length>=3){toast("候補は3つまでです");return} S.shortlist.push({type:"preset",key:k}) }
+    S.q3={}; S.pick=""; render();
+  }
+  if(a==="addCandidateCustom"){
+    const name=(S.candidateFree||"").trim();
+    if(!name){toast("副業の名前を入力してください");return}
+    if(S.shortlist.length>=3){toast("候補は3つまでです");return}
+    S.shortlist.push({type:"custom",key:"c"+Date.now(),name});
+    S.candidateFree=""; S.q3={}; S.pick="";
+    render();
+  }
+  if(a==="removeCandidate"){
+    const k=b.dataset.key;
+    S.shortlist=S.shortlist.filter(c=>c.key!==k);
+    if(S.pick===k) S.pick="";
+    S.q3={}; render();
+  }
   if(a==="switchBackup"){
-    const bkKey=Object.keys(JOBS).find(x=>JOBS[x].name===S.backup);
-    S.pick=bkKey||""; S.why=""; S.verify=""; S.backup=""; S.q3={};
+    const bk=S.shortlist.find(c=>(c.type==="preset"?JOBS[c.key].name:c.name)===S.backup);
+    const bkKey=bk?bk.key:"";
+    S.pick=bkKey; S.why=""; S.verify=""; S.backup=""; S.q3={};
     S.start=todayISO();
     S.reviewLife=""; S.reviewWork=""; S.reviewKeep=""; S.reviewNote=""; S.reviewDecision="";
     toast(bkKey?"控えに切り替えました。3つの質問に答えてください":"控えが見つからなかったので、候補を選び直してください");
@@ -719,7 +755,6 @@ document.addEventListener("click",e=>{
   if(a==="importBackupClick") $("#backupFile").click();
   if(a==="importYes"){if(pendingImport){S=pendingImport;pendingImport=null;$("#backupConfirm").innerHTML="";render();toast("バックアップを読み込みました")}}
   if(a==="importNo"){pendingImport=null;$("#backupConfirm").innerHTML=""}
-  if(a==="backToList"){S.pick=""; go(4)}
   if(a==="selectDay"){
     const d=b.dataset.date;
     S.journalSel=d;
@@ -796,7 +831,7 @@ document.addEventListener("change",e=>{
   if(n==="pick"){S.pick=el.value; autoFill(true); render(); return}
   if(n==="reviewLife"||n==="reviewWork"||n==="reviewKeep"||n==="reviewDecision"){S[n]=el.value; render(); return}
   if(n==="today"){S.today=el.value; S.todayFree=""; render(); return}
-  if(n.startsWith("q3_")){const [,k,q]=n.split("_"); S.q3[k]=Object.assign({},S.q3[k],{[q]:el.value}); if(k!=="custom") S.pick=""; render(); return}
+  if(n.startsWith("q3_")){const [,k,q]=n.split("_"); S.q3[k]=Object.assign({},S.q3[k],{[q]:el.value}); S.pick=""; render(); return}
   const q=Q.find(x=>x.id===n);
   if(q){ if(q.multi){const arr=new Set(S.a[n]||[]); el.checked?arr.add(el.value):arr.delete(el.value); if(el.value==="k_none"&&el.checked){arr.clear();arr.add("k_none")} else if(el.checked) arr.delete("k_none"); S.a[n]=[...arr]} else S.a[n]=el.value; S.q3={}; S.pick=""; render(); }
 });
