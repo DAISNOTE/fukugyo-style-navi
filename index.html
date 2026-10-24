@@ -39,12 +39,7 @@ body{margin:0;background:
   radial-gradient(1100px 420px at 50% -120px, color-mix(in srgb, var(--accent) 7%, transparent), transparent 70%),
   var(--bg);
   color:var(--ink);font-family:var(--font-body);font-size:16px;line-height:1.75;
-  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:0 64px;
-  transition:background 1s ease}
-body.at-title{background:
-  radial-gradient(1400px 900px at 12% -15%, color-mix(in srgb, var(--accent) 16%, transparent), transparent 62%),
-  radial-gradient(1100px 800px at 92% 105%, color-mix(in srgb, var(--warn) 14%, transparent), transparent 62%),
-  var(--bg)}
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:0 64px}
 .wrap{max-width:860px;margin:0 auto}
 header.top{padding-block:32px 10px}
 .brand{font-size:12px;letter-spacing:.2em;color:var(--accent);font-weight:700}
@@ -760,7 +755,6 @@ function howToView(){
   </div>`;
 }
 function render(){
-  document.body.classList.toggle("at-title",atTitle);
   if(atTitle){
     $("header.top").style.display="none";
     $("#rail").innerHTML=""; $("#railfoot").innerHTML="";
