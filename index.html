@@ -122,7 +122,6 @@ textarea:focus,input:focus,select:focus{outline:2px solid var(--accent);outline-
 .btn.big{padding:15px 32px;font-size:17px}
 .titlescreen{display:flex;flex-direction:column;align-items:center;text-align:center;padding:36px 0 16px}
 .titlescreen.menu{min-height:min(60vh,480px);justify-content:center}
-.titlecard{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow-md);padding:40px 32px;max-width:420px;width:100%;display:flex;flex-direction:column;align-items:center}
 .titlehero .mascot{width:120px}
 .titletag{color:var(--sub);font-size:14px;margin:14px 0 6px}
 .titlemenu{display:flex;flex-direction:column;gap:12px;width:100%;max-width:320px;margin-top:22px}
@@ -713,7 +712,6 @@ function sheetText(){
 
 function titleView(){
   return `<div class="titlescreen menu">
-  <div class="titlecard">
   <div class="titlehero">${mascot()}</div>
   <h2>副業スタイルナビ</h2>
   <p class="titletag">F!ND｜副業スタイル 購入者特典</p>
@@ -725,7 +723,6 @@ function titleView(){
   </div>
   <div id="titleConfirm"></div>
   <p class="note titlenote">8つのステップに答えて、まず3ヶ月試す副業を1つ決めます。かかる時間は15分ほどです。入力内容はこのブラウザに自動で保存されるので、「続きから」でいつでも再開できます。</p>
-  </div>
   </div>`;
 }
 function howToView(){
