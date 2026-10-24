@@ -120,8 +120,8 @@ textarea:focus,input:focus,select:focus{outline:2px solid var(--accent);outline-
 .btn:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .btn:disabled{opacity:.45;cursor:not-allowed;transform:none;box-shadow:var(--shadow-sm)}
 .btn.big{padding:15px 32px;font-size:17px}
-.titlescreen{display:flex;flex-direction:column;align-items:center;text-align:center;padding:36px 0 16px}
-.titlescreen.menu{min-height:min(60vh,480px);justify-content:center}
+.titlescreen{display:flex;flex-direction:column;align-items:center;text-align:center;padding:20px 0 16px}
+.titlemain{font-family:var(--font-display);font-weight:800;font-size:clamp(34px,9vw,60px);line-height:1.15;letter-spacing:-.01em;margin:0 0 20px;color:var(--ink)}
 .titlehero .mascot{width:120px}
 .titletag{color:var(--sub);font-size:14px;margin:14px 0 6px}
 .titlemenu{display:flex;flex-direction:column;gap:12px;width:100%;max-width:320px;margin-top:22px}
@@ -712,8 +712,8 @@ function sheetText(){
 
 function titleView(){
   return `<div class="titlescreen menu">
+  <h2 class="titlemain">副業スタイルナビ</h2>
   <div class="titlehero">${mascot()}</div>
-  <h2>副業スタイルナビ</h2>
   <p class="titletag">F!ND｜副業スタイル 購入者特典</p>
   <div class="titlemenu">
     <button type="button" class="btn primary big" data-act="titleNew">新しく始める</button>
