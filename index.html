@@ -722,8 +722,9 @@ function titleView(){
   <p class="titletag">F!ND｜副業スタイル 購入者特典</p>
   <div class="titlemenu">
     <button type="button" class="btn primary big" data-act="titleNew">新しく始める</button>
-    ${S.started?`<button type="button" class="btn big" data-act="titleContinue">続きから</button>`:""}
-    <button type="button" class="btn ghost" data-act="importBackupClick">バックアップを読み込む</button>
+    ${S.started?`<button type="button" class="btn big" data-act="titleContinue">続きから</button>
+    <button type="button" class="btn ghost" data-act="importBackupClick">別の端末のバックアップを読み込む</button>`
+    :`<button type="button" class="btn ghost" data-act="importBackupClick">バックアップから再開する</button>`}
     <button type="button" class="btn ghost" data-act="howTo">使い方</button>
   </div>
   <div id="titleConfirm"></div>
