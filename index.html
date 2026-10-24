@@ -120,9 +120,12 @@ textarea:focus,input:focus,select:focus{outline:2px solid var(--accent);outline-
 .btn:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .btn:disabled{opacity:.45;cursor:not-allowed;transform:none;box-shadow:var(--shadow-sm)}
 .btn.big{padding:15px 32px;font-size:17px}
-.cover .finish{margin-top:4px}
-.coverflow{margin:16px 0 20px;padding-left:1.4em;display:grid;gap:10px;font-size:15px}
-.coverflow li::marker{color:var(--accent);font-weight:700}
+.titlescreen{display:flex;flex-direction:column;align-items:center;text-align:center;padding:36px 0 16px}
+.titlehero .mascot{width:120px}
+.titletag{color:var(--sub);font-size:14px;margin:14px 0 6px}
+.titlemenu{display:flex;flex-direction:column;gap:12px;width:100%;max-width:320px;margin-top:22px}
+.titlemenu .btn{width:100%}
+.titlenote{margin:22px 0 0;max-width:46ch}
 .warnline{color:var(--bad);font-size:14px}
 .cands{display:grid;gap:13px;margin-top:16px}
 .cand{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:16px 18px;box-shadow:var(--shadow-sm);transition:box-shadow .15s}
@@ -360,6 +363,7 @@ const HARD=[
 
 const blank=()=>({started:false,step:0,feel:[],reason:"",reasonFree:"",purpose:"",a:{},hard:[],shortlist:[],candidateFree:"",q3:{},pick:"",why:"",verify:"",backup:"",today:"",todayFree:"",start:new Date().toISOString().slice(0,10),journal:[],journalDraft:"",journalHours:"",journalIncome:"",journalSel:"",calViewOffset:0,reviewLife:"",reviewWork:"",reviewKeep:"",reviewNote:"",reviewDecision:""});
 let S=load()||blank();
+let atTitle=true;
 function load(){try{const v=localStorage.getItem(KEY);return v?Object.assign(blank(),JSON.parse(v)):null}catch(e){return null}}
 function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
 const $=s=>document.querySelector(s);
@@ -699,29 +703,30 @@ function sheetText(){
   return "【副業スタイルナビ｜選択シート】\n"+sheetData().map(([a,b])=>`■${a}\n${b}`).join("\n")+"\n\n※3ヶ月後は「生活との相性」「仕事としての手応え」「続ける見込み」で振り返る";
 }
 
-function coverView(){
-  return `<div class="cover">
-  <div class="finish">${mascot()}<div class="bubble"><b>はじめる前に</b>副業について調べるだけの毎日から、今日動き出す毎日へ。ここから一緒に、あなたに合う一歩を整理していきます。</div></div>
-  <h3>こんな順番で進みます</h3>
-  <ol class="coverflow">
-    <li>自分の条件を書き出し、譲れない条件を選ぶ</li>
-    <li>気になる副業を3つまで挙げて、条件に合うか確認する</li>
-    <li>3つの質問で、まず試す1つを決める</li>
-    <li>今日やることと、3ヶ月の計画を決める</li>
-    <li>3ヶ月のあいだ、記録しながら試す</li>
-  </ol>
-  <p class="note">8つのステップで、かかる時間は15分ほどです。途中でやめても、入力内容はこのブラウザに自動で保存されるので、続きから再開できます。</p>
-  <div class="actions"><button type="button" class="btn primary big" data-act="begin">はじめる</button></div>
+function titleView(){
+  return `<div class="titlescreen">
+  <div class="titlehero">${mascot()}</div>
+  <h2>副業スタイルナビ</h2>
+  <p class="titletag">F!ND｜副業スタイル 購入者特典</p>
+  <div class="titlemenu">
+    <button type="button" class="btn primary big" data-act="titleNew">新しく始める</button>
+    ${S.started?`<button type="button" class="btn big" data-act="titleContinue">続きから</button>`:""}
+    <button type="button" class="btn ghost" data-act="importBackupClick">バックアップを読み込む</button>
+  </div>
+  <div id="titleConfirm"></div>
+  <p class="note titlenote">8つのステップに答えて、まず3ヶ月試す副業を1つ決めます。かかる時間は15分ほどです。入力内容はこのブラウザに自動で保存されるので、「続きから」でいつでも再開できます。</p>
   </div>`;
 }
 function render(){
-  if(!S.started){
+  if(atTitle){
+    $("header.top").style.display="none";
     $("#rail").innerHTML=""; $("#railfoot").innerHTML="";
     $(".rail").style.display="none";
-    $("#main").innerHTML=`<section class="step">${coverView()}</section>`;
+    $("#main").innerHTML=`<section class="step">${titleView()}</section>`;
     save();
     return;
   }
+  $("header.top").style.display="";
   $(".rail").style.display="";
   rail();
   $("#main").innerHTML=`<section class="step">${views[S.step]()}</section>`;
@@ -734,14 +739,23 @@ document.addEventListener("click",e=>{
   const g=e.target.closest("[data-go]"); if(g){go(+g.dataset.go);return}
   const b=e.target.closest("[data-act]"); if(!b) return;
   const a=b.dataset.act;
-  if(a==="begin"){S.started=true; render(); window.scrollTo({top:0,behavior:matchMedia("(prefers-reduced-motion: reduce)").matches?"auto":"smooth"})}
+  if(a==="titleNew"){
+    if(S.started){
+      $("#titleConfirm").innerHTML=`<div class="confirm">これまでの入力を消して、最初から始めます。よろしいですか？<div class="actions"><button type="button" class="btn primary" data-act="titleNewYes">消して最初から始める</button><button type="button" class="btn" data-act="titleNewNo">やめる</button></div></div>`;
+    } else {
+      S=blank(); S.started=true; atTitle=false; render();
+    }
+  }
+  if(a==="titleNewNo"){$("#titleConfirm").innerHTML=""}
+  if(a==="titleNewYes"){S=blank(); S.started=true; atTitle=false; render()}
+  if(a==="titleContinue"){atTitle=false; render()}
   if(a==="next") go(S.step+1);
   if(a==="prev") go(S.step-1);
   if(a==="copy"){const txt=sheetText();const done=()=>toast("コピーしました。メモアプリなどに貼り付けて保存してください");
     try{navigator.clipboard.writeText(txt).then(done,()=>fallback(txt))}catch(err){fallback(txt)}}
   if(a==="reset"){$("#confirmBox").innerHTML=`<div class="confirm">入力した内容をすべて消して、最初に戻ります。よろしいですか？<div class="actions"><button type="button" class="btn primary" data-act="resetYes">消して最初に戻る</button><button type="button" class="btn" data-act="resetNo">やめる</button></div></div>`}
   if(a==="resetNo"){$("#confirmBox").innerHTML=""}
-  if(a==="resetYes"){S=blank();render();toast("最初に戻りました")}
+  if(a==="resetYes"){S=blank();atTitle=true;render();toast("最初に戻りました")}
   if(a==="toggleCandidate"){
     const k=b.dataset.key;
     const idx=S.shortlist.findIndex(c=>c.key===k);
@@ -781,7 +795,7 @@ document.addEventListener("click",e=>{
   if(a==="goStep7"){go(6)}
   if(a==="exportBackup") exportBackup();
   if(a==="importBackupClick") $("#backupFile").click();
-  if(a==="importYes"){if(pendingImport){S=pendingImport;pendingImport=null;$("#backupConfirm").innerHTML="";render();toast("バックアップを読み込みました")}}
+  if(a==="importYes"){if(pendingImport){S=pendingImport;S.started=true;pendingImport=null;atTitle=false;$("#backupConfirm").innerHTML="";render();toast("バックアップを読み込みました")}}
   if(a==="importNo"){pendingImport=null;$("#backupConfirm").innerHTML=""}
   if(a==="selectDay"){
     const d=b.dataset.date;
