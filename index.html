@@ -450,7 +450,7 @@ views[0]=()=>{
   <p class="note">いくつ選んでも構いません。選ばずに進んでも大丈夫です。</p>
   ${chips("feel",FEEL.map(f=>[f.id,f.label]),true,S.feel)}
   ${says}
-  <div class="actions"><button type="button" class="btn primary" data-act="next">はじめる</button></div>`;
+  ${nav(true,"次へ",false)}`;
 };
 views[1]=()=>`<div class="kicker">STEP 2</div><h2>副業を始めたい、一番の理由は？</h2>
   <p class="note">立派な理由である必要はありません。この先、迷ったときに立ち返る場所になります。</p>
