@@ -126,6 +126,11 @@ textarea:focus,input:focus,select:focus{outline:2px solid var(--accent);outline-
 .titlemenu{display:flex;flex-direction:column;gap:12px;width:100%;max-width:320px;margin-top:22px}
 .titlemenu .btn{width:100%}
 .titlenote{margin:22px 0 0;max-width:46ch}
+.titlescreen.howto{align-items:stretch;text-align:left;max-width:640px;margin:0 auto;padding-top:24px}
+.titlescreen.howto h2,.titlescreen.howto .titlehero{align-self:center;text-align:center}
+.titlescreen.howto h3{margin-top:28px}
+.coverflow{margin:12px 0 16px;padding-left:1.4em;display:grid;gap:9px;font-size:15px}
+.coverflow li::marker{color:var(--accent);font-weight:700}
 .warnline{color:var(--bad);font-size:14px}
 .cands{display:grid;gap:13px;margin-top:16px}
 .cand{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:16px 18px;box-shadow:var(--shadow-sm);transition:box-shadow .15s}
@@ -364,6 +369,7 @@ const HARD=[
 const blank=()=>({started:false,step:0,feel:[],reason:"",reasonFree:"",purpose:"",a:{},hard:[],shortlist:[],candidateFree:"",q3:{},pick:"",why:"",verify:"",backup:"",today:"",todayFree:"",start:new Date().toISOString().slice(0,10),journal:[],journalDraft:"",journalHours:"",journalIncome:"",journalSel:"",calViewOffset:0,reviewLife:"",reviewWork:"",reviewKeep:"",reviewNote:"",reviewDecision:""});
 let S=load()||blank();
 let atTitle=true;
+let showHowTo=false;
 function load(){try{const v=localStorage.getItem(KEY);return v?Object.assign(blank(),JSON.parse(v)):null}catch(e){return null}}
 function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
 const $=s=>document.querySelector(s);
@@ -712,9 +718,38 @@ function titleView(){
     <button type="button" class="btn primary big" data-act="titleNew">新しく始める</button>
     ${S.started?`<button type="button" class="btn big" data-act="titleContinue">続きから</button>`:""}
     <button type="button" class="btn ghost" data-act="importBackupClick">バックアップを読み込む</button>
+    <button type="button" class="btn ghost" data-act="howTo">使い方</button>
   </div>
   <div id="titleConfirm"></div>
   <p class="note titlenote">8つのステップに答えて、まず3ヶ月試す副業を1つ決めます。かかる時間は15分ほどです。入力内容はこのブラウザに自動で保存されるので、「続きから」でいつでも再開できます。</p>
+  </div>`;
+}
+function howToView(){
+  return `<div class="titlescreen howto">
+  <div class="titlehero">${mascot()}</div>
+  <h2>使い方</h2>
+  <h3>こんな順番で進みます</h3>
+  <ol class="coverflow">
+    <li>自分の条件を書き出し、譲れない条件を選ぶ</li>
+    <li>気になる副業を3つまで挙げて、条件に合うか確認する</li>
+    <li>3つの質問で、まず試す1つを決める</li>
+    <li>今日やることと、3ヶ月の計画を決める</li>
+    <li>3ヶ月のあいだ、記録しながら試す</li>
+  </ol>
+  <p class="note">かかる時間は15分ほどです。途中で入力をやめても構いません。</p>
+  <h3>保存について</h3>
+  <p class="note">入力した内容は、ボタンを押さなくても、答えるたびに自動でこのブラウザの中に保存されます。次にこのページを開いたとき、タイトル画面の「続きから」を選べば、保存されている続きからそのまま再開できます。</p>
+  <p class="note">ただし、保存される場所は「今使っているこの端末の、このブラウザ」の中だけです。次のような場合、保存した内容は見られなくなります。</p>
+  <ul class="coverflow">
+    <li>別の端末やスマホから開いたとき</li>
+    <li>別のブラウザ（例：SafariからChromeに変えたとき）で開いたとき</li>
+    <li>このブラウザの履歴やサイトデータを消したとき</li>
+    <li>しばらく（長期間）このページを開かずにいて、ブラウザが自動で消してしまったとき</li>
+  </ul>
+  <p class="note">そうした場合に備えて、「バックアップを保存する」を押すと、入力内容をファイル（JSON）としてダウンロードできます。別の端末やブラウザでは、「バックアップを読み込む」からそのファイルを選べば、続きから再開できます。バックアップのボタンは、タイトル画面と、各ステップの下のフッターの両方にあります。</p>
+  <p class="note">入力内容は、サーバーには送信されません。このブラウザの中と、自分で保存したバックアップファイルの中だけに残ります。</p>
+  <p class="note">タイトル画面で「新しく始める」を選ぶと、保存されている内容を消して最初から始められます（消す前に確認が出ます）。</p>
+  <div class="actions"><button type="button" class="btn" data-act="howToBack">タイトルに戻る</button></div>
   </div>`;
 }
 function render(){
@@ -722,7 +757,7 @@ function render(){
     $("header.top").style.display="none";
     $("#rail").innerHTML=""; $("#railfoot").innerHTML="";
     $(".rail").style.display="none";
-    $("#main").innerHTML=`<section class="step">${titleView()}</section>`;
+    $("#main").innerHTML=`<section class="step">${showHowTo?howToView():titleView()}</section>`;
     save();
     return;
   }
@@ -743,12 +778,14 @@ document.addEventListener("click",e=>{
     if(S.started){
       $("#titleConfirm").innerHTML=`<div class="confirm">これまでの入力を消して、最初から始めます。よろしいですか？<div class="actions"><button type="button" class="btn primary" data-act="titleNewYes">消して最初から始める</button><button type="button" class="btn" data-act="titleNewNo">やめる</button></div></div>`;
     } else {
-      S=blank(); S.started=true; atTitle=false; render();
+      S=blank(); S.started=true; atTitle=false; showHowTo=false; render();
     }
   }
   if(a==="titleNewNo"){$("#titleConfirm").innerHTML=""}
-  if(a==="titleNewYes"){S=blank(); S.started=true; atTitle=false; render()}
-  if(a==="titleContinue"){atTitle=false; render()}
+  if(a==="titleNewYes"){S=blank(); S.started=true; atTitle=false; showHowTo=false; render()}
+  if(a==="titleContinue"){atTitle=false; showHowTo=false; render()}
+  if(a==="howTo"){showHowTo=true; render()}
+  if(a==="howToBack"){showHowTo=false; render()}
   if(a==="next") go(S.step+1);
   if(a==="prev") go(S.step-1);
   if(a==="copy"){const txt=sheetText();const done=()=>toast("コピーしました。メモアプリなどに貼り付けて保存してください");
@@ -795,7 +832,7 @@ document.addEventListener("click",e=>{
   if(a==="goStep7"){go(6)}
   if(a==="exportBackup") exportBackup();
   if(a==="importBackupClick") $("#backupFile").click();
-  if(a==="importYes"){if(pendingImport){S=pendingImport;S.started=true;pendingImport=null;atTitle=false;$("#backupConfirm").innerHTML="";render();toast("バックアップを読み込みました")}}
+  if(a==="importYes"){if(pendingImport){S=pendingImport;S.started=true;pendingImport=null;atTitle=false;showHowTo=false;$("#backupConfirm").innerHTML="";render();toast("バックアップを読み込みました")}}
   if(a==="importNo"){pendingImport=null;$("#backupConfirm").innerHTML=""}
   if(a==="selectDay"){
     const d=b.dataset.date;
